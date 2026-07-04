@@ -1,0 +1,1223 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ShortsGen — Генератор Шортсов и Рилсов</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  :root {
+    --bg: #08080e;
+    --bg2: #0f1018;
+    --card: rgba(255,255,255,0.04);
+    --card-hover: rgba(255,255,255,0.07);
+    --border: rgba(255,255,255,0.08);
+    --fg: #e8e8ef;
+    --muted: #6b6b80;
+    --accent: #ff4444;
+    --accent2: #ff6b35;
+    --accent-glow: rgba(255,68,68,0.25);
+    --green: #00e5a0;
+    --green-glow: rgba(0,229,160,0.2);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  h1,h2,h3,h4 { font-family: 'Space Grotesk', sans-serif; }
+
+  /* Анимированный фон */
+  .bg-blobs {
+    position: fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden;
+  }
+  .bg-blobs .blob {
+    position:absolute; border-radius:50%; filter:blur(120px); opacity:0.35;
+    animation: blobFloat 18s ease-in-out infinite alternate;
+  }
+  .blob-1 { width:500px; height:500px; background:var(--accent); top:-10%; left:-5%; animation-delay:0s; }
+  .blob-2 { width:400px; height:400px; background:#6c2bd9; bottom:-10%; right:-5%; animation-delay:-6s; }
+  .blob-3 { width:300px; height:300px; background:var(--accent2); top:40%; left:50%; animation-delay:-12s; }
+  @keyframes blobFloat {
+    0% { transform: translate(0,0) scale(1); }
+    33% { transform: translate(40px,-30px) scale(1.1); }
+    66% { transform: translate(-20px,40px) scale(0.95); }
+    100% { transform: translate(30px,20px) scale(1.05); }
+  }
+
+  /* Карточки */
+  .glass-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+
+  /* Инпуты */
+  .sg-input {
+    width:100%; padding:12px 16px; border-radius:10px;
+    background: rgba(255,255,255,0.06); border:1px solid var(--border);
+    color:var(--fg); font-family:'DM Sans',sans-serif; font-size:15px;
+    transition: border-color .2s, box-shadow .2s;
+    outline:none;
+  }
+  .sg-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+  }
+  .sg-input::placeholder { color: var(--muted); }
+
+  /* Стиль-кнопки (радио) */
+  .style-btn {
+    padding:8px 14px; border-radius:10px; font-size:13px; font-weight:500;
+    background: rgba(255,255,255,0.05); border:1px solid var(--border);
+    color: var(--muted); cursor:pointer; transition: all .2s;
+    text-align:center;
+  }
+  .style-btn:hover { background: rgba(255,255,255,0.08); color:var(--fg); }
+  .style-btn.active {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-color: transparent; color:#fff; font-weight:600;
+    box-shadow: 0 4px 20px var(--accent-glow);
+  }
+
+  /* Рейндж */
+  .sg-range { -webkit-appearance:none; width:100%; height:6px; border-radius:3px;
+    background: rgba(255,255,255,0.1); outline:none; }
+  .sg-range::-webkit-slider-thumb { -webkit-appearance:none; width:20px; height:20px;
+    border-radius:50%; background: linear-gradient(135deg, var(--accent), var(--accent2));
+    cursor:pointer; box-shadow: 0 2px 10px var(--accent-glow); }
+
+  /* Кнопка генерации */
+  .gen-btn {
+    width:100%; padding:16px; border:none; border-radius:14px; font-size:16px; font-weight:700;
+    font-family:'Space Grotesk',sans-serif; cursor:pointer;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color:#fff; position:relative; overflow:hidden;
+    transition: transform .15s, box-shadow .15s;
+    box-shadow: 0 6px 30px var(--accent-glow);
+  }
+  .gen-btn:hover:not(:disabled) { transform:translateY(-2px); box-shadow: 0 10px 40px var(--accent-glow); }
+  .gen-btn:active:not(:disabled) { transform:translateY(0); }
+  .gen-btn:disabled { opacity:0.5; cursor:not-allowed; }
+  .gen-btn .shimmer {
+    position:absolute; inset:0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+    transform: translateX(-100%);
+    animation: shimmer 2s infinite;
+  }
+  @keyframes shimmer { 100% { transform: translateX(100%); } }
+
+  /* Прогресс */
+  .progress-bar { height:4px; border-radius:2px; background:rgba(255,255,255,0.08); overflow:hidden; }
+  .progress-fill { height:100%; border-radius:2px; transition: width .4s ease;
+    background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+  .progress-fill.done { background: linear-gradient(90deg, var(--green), #00c9ff); }
+
+  /* Телефон-фрейм */
+  .phone-frame {
+    width: 280px; height: 498px; border-radius: 32px;
+    border: 3px solid rgba(255,255,255,0.12);
+    background: #000; overflow:hidden; position:relative;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(255,255,255,0.05);
+  }
+  .phone-frame canvas { width:100%; height:100%; display:block; }
+  .phone-notch {
+    position:absolute; top:0; left:50%; transform:translateX(-50%);
+    width:100px; height:24px; background:#000; border-radius:0 0 16px 16px; z-index:5;
+  }
+
+  /* Timeline */
+  .timeline-item {
+    width:72px; height:128px; border-radius:10px; overflow:hidden;
+    border:2px solid transparent; cursor:pointer; flex-shrink:0;
+    transition: border-color .2s, transform .2s; position:relative;
+    background: rgba(255,255,255,0.03);
+  }
+  .timeline-item:hover { transform:scale(1.05); }
+  .timeline-item.active { border-color: var(--accent); box-shadow: 0 0 15px var(--accent-glow); }
+  .timeline-item img { width:100%; height:100%; object-fit:cover; }
+  .timeline-item .slide-num {
+    position:absolute; bottom:4px; left:50%; transform:translateX(-50%);
+    background:rgba(0,0,0,0.7); color:#fff; font-size:11px; font-weight:600;
+    padding:2px 8px; border-radius:6px;
+  }
+
+  /* Тосты */
+  .toast {
+    padding:14px 20px; border-radius:12px; font-size:14px; font-weight:500;
+    backdrop-filter:blur(20px); border:1px solid var(--border);
+    animation: toastIn .3s ease; max-width:380px; pointer-events:auto;
+    display:flex; align-items:center; gap:10px;
+  }
+  .toast-info { background: rgba(30,30,50,0.9); color:var(--fg); }
+  .toast-success { background: rgba(0,50,30,0.9); color:var(--green); border-color:rgba(0,229,160,0.2); }
+  .toast-error { background: rgba(50,10,10,0.9); color:#ff6b6b; border-color:rgba(255,68,68,0.2); }
+  .toast-warn { background: rgba(50,40,10,0.9); color:#ffc940; border-color:rgba(255,201,64,0.2); }
+  @keyframes toastIn { from { opacity:0; transform:translateY(20px) scale(0.95); } to { opacity:1; transform:translateY(0) scale(1); } }
+
+  /* Скроллбар */
+  ::-webkit-scrollbar { width:6px; height:6px; }
+  ::-webkit-scrollbar-track { background:transparent; }
+  ::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.1); border-radius:3px; }
+
+  /* Спиннер */
+  .spinner { width:20px; height:20px; border:2.5px solid rgba(255,255,255,0.2);
+    border-top-color:#fff; border-radius:50%; animation:spin .7s linear infinite; display:inline-block; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  /* Сценарий-текст */
+  .scenario-text {
+    max-height:200px; overflow-y:auto; padding:12px; border-radius:10px;
+    background:rgba(255,255,255,0.03); border:1px solid var(--border);
+    font-size:13px; line-height:1.6; color:var(--muted); white-space:pre-wrap;
+  }
+
+  /* Кнопки действий */
+  .action-btn {
+    padding:10px 20px; border-radius:10px; font-size:14px; font-weight:600;
+    border:1px solid var(--border); background:var(--card); color:var(--fg);
+    cursor:pointer; transition: all .2s; display:inline-flex; align-items:center; gap:8px;
+    font-family:'DM Sans',sans-serif;
+  }
+  .action-btn:hover { background:var(--card-hover); border-color:rgba(255,255,255,0.15); }
+  .action-btn.primary {
+    background: linear-gradient(135deg, var(--green), #00c9ff);
+    border-color:transparent; color:#000;
+  }
+  .action-btn.primary:hover { box-shadow: 0 4px 20px var(--green-glow); }
+  .action-btn:disabled { opacity:0.4; cursor:not-allowed; }
+
+  /* Адаптивность */
+  @media (max-width: 900px) {
+    .main-layout { flex-direction:column !important; }
+    .panel-left, .panel-right { width:100% !important; max-width:100% !important; }
+    .phone-frame { width:240px; height:427px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .blob, .shimmer { animation: none !important; }
+    * { transition-duration: 0.01ms !important; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Фоновые блобы -->
+<div class="bg-blobs" aria-hidden="true">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+</div>
+
+<!-- Тосты -->
+<div id="toast-container" style="position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column-reverse;gap:10px;pointer-events:none;"></div>
+
+<!-- Хедер -->
+<header style="position:relative;z-index:10;padding:16px 28px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:rgba(8,8,14,0.8);backdrop-filter:blur(20px);">
+  <div style="display:flex;align-items:center;gap:12px;">
+    <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;">
+      <i class="fa-solid fa-film" style="font-size:16px;color:#fff;"></i>
+    </div>
+    <h1 style="font-size:22px;font-weight:700;letter-spacing:-0.5px;">
+      Shorts<span style="color:var(--accent);">Gen</span>
+    </h1>
+  </div>
+  <div style="display:flex;align-items:center;gap:16px;">
+    <div id="api-status" style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);">
+      <span style="width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block;"></span>
+      Pollinations API
+    </div>
+  </div>
+</header>
+
+<!-- Основной контент -->
+<main class="main-layout" style="position:relative;z-index:10;display:flex;min-height:calc(100vh - 69px);">
+
+  <!-- Левая панель — Настройки -->
+  <aside class="panel-left" style="width:360px;flex-shrink:0;padding:24px;border-right:1px solid var(--border);overflow-y:auto;display:flex;flex-direction:column;gap:20px;">
+
+    <!-- Тема -->
+    <div>
+      <label style="font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:8px;">
+        <i class="fa-solid fa-pen-nib" style="margin-right:6px;color:var(--accent);"></i>Тема шортса
+      </label>
+      <input id="topic-input" class="sg-input" type="text" placeholder="Например: Почему космос бесконечен..." maxlength="200">
+    </div>
+
+    <!-- Стиль -->
+    <div>
+      <label style="font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:8px;">
+        <i class="fa-solid fa-palette" style="margin-right:6px;color:var(--accent);"></i>Стиль
+      </label>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;" id="style-grid">
+        <button class="style-btn active" data-style="motivation"><i class="fa-solid fa-fire" style="margin-right:4px;"></i>Мотивация</button>
+        <button class="style-btn" data-style="facts"><i class="fa-solid fa-lightbulb" style="margin-right:4px;"></i>Факты</button>
+        <button class="style-btn" data-style="humor"><i class="fa-solid fa-face-laugh" style="margin-right:4px;"></i>Юмор</button>
+        <button class="style-btn" data-style="horror"><i class="fa-solid fa-ghost" style="margin-right:4px;"></i>Хоррор</button>
+        <button class="style-btn" data-style="science"><i class="fa-solid fa-atom" style="margin-right:4px;"></i>Наука</button>
+        <button class="style-btn" data-style="story"><i class="fa-solid fa-book" style="margin-right:4px;"></i>Сторителлинг</button>
+      </div>
+    </div>
+
+    <!-- Количество слайдов -->
+    <div>
+      <label style="font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;display:flex;justify-content:space-between;margin-bottom:8px;">
+        <span><i class="fa-solid fa-layer-group" style="margin-right:6px;color:var(--accent);"></i>Слайды</span>
+        <span id="slides-val" style="color:var(--fg);">5</span>
+      </label>
+      <input id="slides-range" class="sg-range" type="range" min="3" max="8" value="5">
+    </div>
+
+    <!-- Длительность слайда -->
+    <div>
+      <label style="font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;display:flex;justify-content:space-between;margin-bottom:8px;">
+        <span><i class="fa-solid fa-clock" style="margin-right:6px;color:var(--accent);"></i>Длительность слайда</span>
+        <span id="duration-val" style="color:var(--fg);">4 сек</span>
+      </label>
+      <input id="duration-range" class="sg-range" type="range" min="3" max="8" value="4">
+    </div>
+
+    <!-- Кнопка генерации -->
+    <button id="gen-btn" class="gen-btn" onclick="startGeneration()">
+      <span class="shimmer" id="btn-shimmer"></span>
+      <span id="btn-text"><i class="fa-solid fa-wand-magic-sparkles" style="margin-right:8px;"></i>Сгенерировать шортс</span>
+    </button>
+
+    <!-- Прогресс -->
+    <div id="progress-section" style="display:none;display:flex;flex-direction:column;gap:14px;">
+      <div id="p-scenario">
+        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
+          <span style="color:var(--muted);"><i class="fa-solid fa-scroll" style="margin-right:4px;"></i>Сценарий</span>
+          <span class="p-status" style="color:var(--muted);">Ожидание</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:0%"></div></div>
+      </div>
+      <div id="p-images">
+        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
+          <span style="color:var(--muted);"><i class="fa-solid fa-image" style="margin-right:4px;"></i>Изображения</span>
+          <span class="p-status" style="color:var(--muted);">Ожидание</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:0%"></div></div>
+      </div>
+      <div id="p-audio">
+        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
+          <span style="color:var(--muted);"><i class="fa-solid fa-microphone" style="margin-right:4px;"></i>Озвучка</span>
+          <span class="p-status" style="color:var(--muted);">Ожидание</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:0%"></div></div>
+      </div>
+      <div id="p-video">
+        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
+          <span style="color:var(--muted);"><i class="fa-solid fa-video" style="margin-right:4px;"></i>Сборка видео</span>
+          <span class="p-status" style="color:var(--muted);">Ожидание</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <!-- Сценарий -->
+    <div id="scenario-section" style="display:none;">
+      <label style="font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:8px;">
+        <i class="fa-solid fa-align-left" style="margin-right:6px;color:var(--green);"></i>Сгенерированный сценарий
+      </label>
+      <div id="scenario-text" class="scenario-text"></div>
+    </div>
+  </aside>
+
+  <!-- Правая панель — Превью -->
+  <section class="panel-right" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px;gap:20px;position:relative;">
+
+    <!-- Пустое состояние -->
+    <div id="empty-state" style="text-align:center;max-width:400px;">
+      <div style="width:80px;height:80px;border-radius:20px;background:var(--card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
+        <i class="fa-solid fa-clapperboard" style="font-size:32px;color:var(--muted);"></i>
+      </div>
+      <h2 style="font-size:20px;font-weight:700;margin-bottom:8px;">Введите тему и нажмите «Сгенерировать»</h2>
+      <p style="font-size:14px;color:var(--muted);line-height:1.6;"> ShortsGen создаст сценарий, сгенерирует изображения, озвучит и соберёт готовый вертикальный ролик</p>
+      <div style="margin-top:24px;display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);"><i class="fa-solid fa-check" style="color:var(--green);"></i>Pollinations LLM</div>
+        <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);"><i class="fa-solid fa-check" style="color:var(--green);"></i>Pollinations Image</div>
+        <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);"><i class="fa-solid fa-check" style="color:var(--green);"></i>TTS озвучка</div>
+        <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);"><i class="fa-solid fa-check" style="color:var(--green);"></i>Canvas видео</div>
+      </div>
+    </div>
+
+    <!-- Превью (скрыто изначально) -->
+    <div id="preview-section" style="display:none;flex-direction:column;align-items:center;gap:16px;">
+      <div class="phone-frame">
+        <div class="phone-notch"></div>
+        <canvas id="preview-canvas" width="540" height="960"></canvas>
+      </div>
+
+      <!-- Навигация слайдов -->
+      <div style="display:flex;align-items:center;gap:16px;">
+        <button class="action-btn" onclick="prevSlide()" id="prev-btn" style="padding:8px 14px;" disabled>
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <span id="slide-counter" style="font-size:14px;font-weight:600;min-width:80px;text-align:center;">1 / 5</span>
+        <button class="action-btn" onclick="nextSlide()" id="next-btn" style="padding:8px 14px;" disabled>
+          <i class="fa-solid fa-chevron-right"></i>
+        </button>
+      </div>
+
+      <!-- Кнопки действий -->
+      <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">
+        <button class="action-btn" onclick="previewSpeak()" id="speak-btn" disabled>
+          <i class="fa-solid fa-volume-high"></i> Прослушать озвучку
+        </button>
+        <button class="action-btn primary" onclick="downloadVideo()" id="download-btn" disabled>
+          <i class="fa-solid fa-download"></i> Скачать видео
+        </button>
+      </div>
+    </div>
+
+    <!-- Timeline -->
+    <div id="timeline-section" style="display:none;width:100%;max-width:700px;">
+      <div style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">
+        <i class="fa-solid fa-film" style="margin-right:4px;"></i>Таймлайн
+      </div>
+      <div id="timeline" style="display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;"></div>
+    </div>
+  </section>
+</main>
+
+<script>
+// ===================== СОСТОЯНИЕ =====================
+const state = {
+  topic: '',
+  style: 'motivation',
+  numSlides: 5,
+  slideDuration: 4,
+  scenario: null,
+  images: [],       // HTMLImageElement[]
+  imageUrls: [],    // string[]
+  audioBlobs: [],   // Blob[] или null
+  videoBlob: null,
+  currentSlide: 0,
+  isGenerating: false,
+  ttsMethod: null    // какой метод TTS сработал
+};
+
+// ===================== UI УТИЛИТЫ =====================
+
+/** Показать тост-уведомление */
+function showToast(message, type = 'info', duration = 4000) {
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  const icons = { info: 'circle-info', success: 'circle-check', error: 'circle-xmark', warn: 'triangle-exclamation' };
+  toast.innerHTML = `<i class="fa-solid fa-${icons[type] || icons.info}"></i><span>${message}</span>`;
+  container.appendChild(toast);
+  setTimeout(() => {
+    toast.style.transition = 'opacity .3s, transform .3s';
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateY(10px)';
+    setTimeout(() => toast.remove(), 300);
+  }, duration);
+}
+
+/** Обновить прогресс-бар */
+function setProgress(stageId, percent, statusText) {
+  const el = document.getElementById(stageId);
+  if (!el) return;
+  const fill = el.querySelector('.progress-fill');
+  const status = el.querySelector('.p-status');
+  fill.style.width = percent + '%';
+  if (percent >= 100) {
+    fill.classList.add('done');
+    status.style.color = 'var(--green)';
+  } else if (percent > 0) {
+    fill.classList.remove('done');
+    status.style.color = 'var(--accent2)';
+  } else {
+    fill.classList.remove('done');
+    status.style.color = 'var(--muted)';
+  }
+  if (statusText) status.textContent = statusText;
+}
+
+// ===================== НАСТРОЙКИ =====================
+
+// Радио-кнопки стиля
+document.getElementById('style-grid').addEventListener('click', e => {
+  const btn = e.target.closest('.style-btn');
+  if (!btn) return;
+  document.querySelectorAll('.style-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  state.style = btn.dataset.style;
+});
+
+// Рейнджи
+document.getElementById('slides-range').addEventListener('input', e => {
+  state.numSlides = parseInt(e.target.value);
+  document.getElementById('slides-val').textContent = state.numSlides;
+});
+document.getElementById('duration-range').addEventListener('input', e => {
+  state.slideDuration = parseInt(e.target.value);
+  document.getElementById('duration-val').textContent = state.slideDuration + ' сек';
+});
+
+// Скрыть прогресс при старте
+document.getElementById('progress-section').style.display = 'none';
+
+// ===================== TTS МЕТОДЫ =====================
+
+/**
+ * Пробуем несколько TTS-методов, возвращаем аудио Blob или null.
+ * Pollinations может иметь OpenAI-совместимый TTS эндпоинт.
+ */
+async function generateTTS(text) {
+  // Если уже знаем рабочий метод — используем его
+  if (state.ttsMethod === 'pollinations-openai') return ttsPollinationsOpenAI(text);
+  if (state.ttsMethod === 'pollinations-get') return ttsPollinationsGet(text);
+  if (state.ttsMethod === 'pollinations-audio') return ttsPollinationsAudio(text);
+  if (state.ttsMethod === 'none') return null;
+
+  // Пробуем по очереди
+  const methods = [ttsPollinationsOpenAI, ttsPollinationsGet, ttsPollinationsAudio];
+  for (const method of methods) {
+    try {
+      const blob = await method(text);
+      if (blob && blob.size > 100) {
+        state.ttsMethod = method.name;
+        console.log('TTS method found:', method.name);
+        return blob;
+      }
+    } catch(e) { /* Следующий метод */ }
+  }
+  state.ttsMethod = 'none';
+  return null;
+}
+
+/** Метод 1: Pollinations OpenAI-совместимый TTS */
+async function ttsPollinationsOpenAI(text) {
+  const res = await fetch('https://text.pollinations.ai/openai/audio/speech', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'tts-1',
+      input: text,
+      voice: 'alloy'
+    })
+  });
+  if (!res.ok) throw new Error('TTS OpenAI failed');
+  return await res.blob();
+}
+
+/** Метод 2: Pollinations GET audio */
+async function ttsPollinationsGet(text) {
+  const res = await fetch(`https://text.pollinations.ai/audio/${encodeURIComponent(text)}?model=tts-1&voice=alloy`);
+  if (!res.ok) throw new Error('TTS GET failed');
+  const blob = await res.blob();
+  if (blob.type && blob.type.includes('text')) throw new Error('Got text, not audio');
+  return blob;
+}
+
+/** Метод 3: audio.pollinations.ai */
+async function ttsPollinationsAudio(text) {
+  const res = await fetch(`https://audio.pollinations.ai/prompt/${encodeURIComponent(text)}?voice=alloy&model=tts-1`);
+  if (!res.ok) throw new Error('TTS audio.pollinations failed');
+  return await res.blob();
+}
+
+/** Предпрослушивание через Web Speech API (всегда работает в браузере) */
+function previewSpeak() {
+  if (!state.scenario) return;
+  const slide = state.scenario.slides[state.currentSlide];
+  if (!slide) return;
+  speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(slide.text);
+  utter.lang = 'ru-RU';
+  utter.rate = 1.0;
+  utter.pitch = 1.1;
+
+  // Пытаемся найти русский голос (аналог Светланы)
+  const voices = speechSynthesis.getVoices();
+  const ruVoice = voices.find(v => v.lang.startsWith('ru') && v.name.toLowerCase().includes('svetlana'))
+    || voices.find(v => v.lang.startsWith('ru') && v.name.toLowerCase().includes('светлана'))
+    || voices.find(v => v.lang.startsWith('ru') && v.name.toLowerCase().includes('female'))
+    || voices.find(v => v.lang.startsWith('ru'));
+  if (ruVoice) utter.voice = ruVoice;
+
+  const btn = document.getElementById('speak-btn');
+  btn.innerHTML = '<span class="spinner"></span> Воспроизведение...';
+  utter.onend = () => { btn.innerHTML = '<i class="fa-solid fa-volume-high"></i> Прослушать озвучку'; };
+  utter.onerror = () => { btn.innerHTML = '<i class="fa-solid fa-volume-high"></i> Прослушать озвучку'; };
+  speechSynthesis.speak(utter);
+}
+
+// Загрузка голосов (некоторые браузеры загружают асинхронно)
+if (speechSynthesis.onvoiceschanged !== undefined) {
+  speechSynthesis.onvoiceschanged = () => {};
+}
+speechSynthesis.getVoices();
+
+// ===================== ГЕНЕРАЦИЯ СЦЕНАРИЯ =====================
+
+async function generateScenario(topic, style, numSlides) {
+  const stylePrompts = {
+    motivation: 'мотивационный стиль, вдохновляющий тон, мощные фразы',
+    facts: 'увлекательные факты, познавательный тон, удивительные детали',
+    humor: 'юмористический стиль, ирония, забавные сравнения',
+    horror: 'жанр хоррор, напряжённая атмосфера, тревожный тон',
+    science: 'научный подход, чёткие объяснения, терминология простым языком',
+    story: 'сторителлинг, завязка и развязка, эмоциональная арка'
+  };
+
+  const systemPrompt = `Ты — профессиональный сценарист для YouTube Shorts и Instagram Reels.
+Пиши на русском языке. Стиль: ${stylePrompts[style] || stylePrompts.motivation}.
+Формат ответа — ТОЛЬКО валидный JSON, без markdown, без комментариев.`;
+
+  const userPrompt = `Напиши сценарий шортса на тему "${topic}".
+Количество слайдов: ${numSlides}.
+Для каждого слайда нужно:
+- "text": короткий текст для показа на экране (1-2 предложения, максимум 120 символов)
+- "imagePrompt": детальное описание изображения на АНГЛИЙСКОМ языке для AI-генерации (кинематографичное, вертикальное фото)
+
+Формат JSON:
+{
+  "title": "Название шортса",
+  "slides": [
+    {"text": "...", "imagePrompt": "..."}
+  ]
+}`;
+
+  const res = await fetch('https://text.pollinations.ai/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt }
+      ],
+      model: 'openai',
+      jsonMode: true,
+      seed: Math.floor(Math.random() * 100000)
+    })
+  });
+
+  if (!res.ok) throw new Error(`LLM ошибка: ${res.status}`);
+  const raw = await res.text();
+
+  // Пробуем распарсить JSON (возможно с обёрткой ```json ... ```)
+  let jsonStr = raw.trim();
+  const jsonMatch = jsonStr.match(/\{[\s\S]*\}/);
+  if (jsonMatch) jsonStr = jsonMatch[0];
+
+  return JSON.parse(jsonStr);
+}
+
+// ===================== ГЕНЕРАЦИЯ ИЗОБРАЖЕНИЙ =====================
+
+async function generateImage(prompt, index) {
+  const seed = Math.floor(Math.random() * 999999);
+  const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1080&height=1920&nologo=true&seed=${seed}&model=flux`;
+
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => resolve({ img, url });
+    img.onerror = () => reject(new Error(`Изображение ${index + 1} не загрузилось`));
+    img.src = url;
+
+    // Таймаут 30 секунд
+    setTimeout(() => reject(new Error(`Таймаут изображения ${index + 1}`)), 30000);
+  });
+}
+
+// ===================== СБОРКА ВИДЕО =====================
+
+async function assembleVideo() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 1080;
+  canvas.height = 1920;
+  const ctx = canvas.getContext('2d');
+
+  const fps = 30;
+  const slideDur = state.slideDuration;
+  const totalDur = state.numSlides * slideDur;
+  const totalFrames = totalDur * fps;
+
+  // Создаём стрим
+  const stream = canvas.captureStream(fps);
+
+  // Если есть аудио — добавляем в стрим
+  let audioElements = [];
+  if (state.audioBlobs.some(b => b !== null)) {
+    try {
+      const audioCtx = new AudioContext();
+      const dest = audioCtx.createMediaStreamDestination();
+      let hasAudio = false;
+
+      for (let i = 0; i < state.audioBlobs.length; i++) {
+        const blob = state.audioBlobs[i];
+        if (!blob) continue;
+        const audioUrl = URL.createObjectURL(blob);
+        const audio = new Audio(audioUrl);
+        audioElements.push({ audio, startTime: i * slideDur });
+        const source = audioCtx.createMediaElementSource(audio);
+        source.connect(dest);
+        source.connect(audioCtx.destination);
+        hasAudio = true;
+      }
+
+      if (hasAudio) {
+        dest.stream.getAudioTracks().forEach(track => stream.addTrack(track));
+      }
+    } catch(e) {
+      console.warn('Не удалось добавить аудио в стрим:', e);
+    }
+  }
+
+  // Определяем поддерживаемый mimeType
+  let mimeType = 'video/webm;codecs=vp9,opus';
+  if (!MediaRecorder.isTypeSupported(mimeType)) {
+    mimeType = 'video/webm;codecs=vp8,opus';
+    if (!MediaRecorder.isTypeSupported(mimeType)) {
+      mimeType = 'video/webm';
+    }
+  }
+
+  const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 5000000 });
+  const chunks = [];
+  recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+
+  return new Promise((resolve, reject) => {
+    recorder.onstop = () => {
+      const blob = new Blob(chunks, { type: 'video/webm' });
+      // Останавливаем аудио
+      audioElements.forEach(a => { try { a.audio.pause(); a.audio.currentTime = 0; } catch(e){} });
+      resolve(blob);
+    };
+    recorder.onerror = e => reject(e.error);
+
+    recorder.start();
+
+    // Запускаем аудио
+    audioElements.forEach(a => {
+      setTimeout(() => { try { a.audio.play().catch(()=>{}); } catch(e){} }, a.startTime * 1000);
+    });
+
+    let frame = 0;
+
+    function renderFrame() {
+      if (frame >= totalFrames) {
+        recorder.stop();
+        return;
+      }
+
+      const currentTime = frame / fps;
+      const slideIndex = Math.min(Math.floor(currentTime / slideDur), state.numSlides - 1);
+      const slideProgress = (currentTime - slideIndex * slideDur) / slideDur;
+
+      drawSlide(ctx, canvas.width, canvas.height, slideIndex, slideProgress);
+
+      // Обновляем прогресс
+      const videoProgress = Math.round((frame / totalFrames) * 100);
+      setProgress('p-video', videoProgress, videoProgress >= 100 ? 'Готово' : `Рендер ${videoProgress}%`);
+
+      frame++;
+      requestAnimationFrame(renderFrame);
+    }
+
+    renderFrame();
+  });
+}
+
+/** Отрисовать один кадр слайда на canvas */
+function drawSlide(ctx, w, h, slideIndex, progress) {
+  const img = state.images[slideIndex];
+  if (!img) return;
+
+  // Ken Burns эффект — плавный зум и сдвиг
+  const directions = [
+    { sx: 0, sy: 0 },   // зум в центр
+    { sx: -1, sy: 0 },  // пан влево
+    { sx: 1, sy: 0 },   // пан вправо
+    { sx: 0, sy: -1 },  // пан вверх
+    { sx: 0, sy: 1 },   // пан вниз
+  ];
+  const dir = directions[slideIndex % directions.length];
+  const scale = 1.08 + progress * 0.08;
+  const panX = dir.sx * progress * 40;
+  const panY = dir.sy * progress * 25;
+
+  // Рисуем изображение с Ken Burns
+  ctx.save();
+  ctx.translate(w / 2 + panX, h / 2 + panY);
+  ctx.scale(scale, scale);
+  ctx.drawImage(img, -w / 2, -h / 2, w, h);
+  ctx.restore();
+
+  // Тёмная виньетка по краям
+  const vignette = ctx.createRadialGradient(w/2, h/2, h*0.3, w/2, h/2, h*0.75);
+  vignette.addColorStop(0, 'rgba(0,0,0,0)');
+  vignette.addColorStop(1, 'rgba(0,0,0,0.6)');
+  ctx.fillStyle = vignette;
+  ctx.fillRect(0, 0, w, h);
+
+  // Нижний градиент для текста
+  const grad = ctx.createLinearGradient(0, h * 0.55, 0, h);
+  grad.addColorStop(0, 'rgba(0,0,0,0)');
+  grad.addColorStop(0.4, 'rgba(0,0,0,0.5)');
+  grad.addColorStop(1, 'rgba(0,0,0,0.85)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, w, h);
+
+  // Текст слайда
+  const slide = state.scenario.slides[slideIndex];
+  if (slide) {
+    const textAlpha = Math.min(1, progress * 4); // Быстрое появление
+    const textYOffset = (1 - Math.min(1, progress * 3)) * 30;
+
+    ctx.save();
+    ctx.globalAlpha = textAlpha;
+
+    // Тень текста
+    ctx.shadowColor = 'rgba(0,0,0,0.8)';
+    ctx.shadowBlur = 20;
+    ctx.shadowOffsetY = 4;
+
+    // Текст
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 52px "Space Grotesk", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    const maxW = w * 0.82;
+    const lines = wrapText(ctx, slide.text, maxW);
+    const lineHeight = 64;
+    const startY = h * 0.72 - ((lines.length - 1) * lineHeight) / 2 + textYOffset;
+
+    lines.forEach((line, i) => {
+      ctx.fillText(line, w / 2, startY + i * lineHeight);
+    });
+
+    ctx.restore();
+  }
+
+  // Номер слайда (правый верхний угол)
+  ctx.save();
+  ctx.globalAlpha = 0.5;
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '600 24px "DM Sans", sans-serif';
+  ctx.textAlign = 'right';
+  ctx.fillText(`${slideIndex + 1} / ${state.numSlides}`, w - 40, 60);
+  ctx.restore();
+
+  // Логотип (левый верхний угол)
+  ctx.save();
+  ctx.globalAlpha = 0.4;
+  ctx.fillStyle = '#ff4444';
+  ctx.font = 'bold 22px "Space Grotesk", sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('ShortsGen', 40, 60);
+  ctx.restore();
+
+  // Переход между слайдами (fade)
+  if (progress < 0.08) {
+    ctx.fillStyle = `rgba(0,0,0,${1 - progress / 0.08})`;
+    ctx.fillRect(0, 0, w, h);
+  }
+}
+
+/** Перенос текста по строкам */
+function wrapText(ctx, text, maxWidth) {
+  const words = text.split(' ');
+  const lines = [];
+  let currentLine = '';
+
+  for (const word of words) {
+    const testLine = currentLine ? currentLine + ' ' + word : word;
+    const metrics = ctx.measureText(testLine);
+    if (metrics.width > maxWidth && currentLine) {
+      lines.push(currentLine);
+      currentLine = word;
+    } else {
+      currentLine = testLine;
+    }
+  }
+  if (currentLine) lines.push(currentLine);
+  return lines;
+}
+
+// ===================== ПРЕВЬЮ НА CANVAS =====================
+
+function drawPreview() {
+  const canvas = document.getElementById('preview-canvas');
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width;
+  const h = canvas.height;
+
+  ctx.clearRect(0, 0, w, h);
+
+  if (!state.images.length || !state.scenario) {
+    // Пустой превью
+    ctx.fillStyle = '#111118';
+    ctx.fillRect(0, 0, w, h);
+    ctx.fillStyle = '#333';
+    ctx.font = '16px "DM Sans"';
+    ctx.textAlign = 'center';
+    ctx.fillText('Превью появится здесь', w/2, h/2);
+    return;
+  }
+
+  const img = state.images[state.currentSlide];
+  if (!img) return;
+
+  // Масштабируем Ken Burns на меньший canvas
+  const scale = 1.1;
+  ctx.save();
+  ctx.translate(w/2, h/2);
+  ctx.scale(scale, scale);
+  ctx.drawImage(img, -w/2, -h/2, w, h);
+  ctx.restore();
+
+  // Виньетка
+  const vignette = ctx.createRadialGradient(w/2, h/2, h*0.25, w/2, h/2, h*0.6);
+  vignette.addColorStop(0, 'rgba(0,0,0,0)');
+  vignette.addColorStop(1, 'rgba(0,0,0,0.6)');
+  ctx.fillStyle = vignette;
+  ctx.fillRect(0, 0, w, h);
+
+  // Нижний градиент
+  const grad = ctx.createLinearGradient(0, h*0.5, 0, h);
+  grad.addColorStop(0, 'rgba(0,0,0,0)');
+  grad.addColorStop(0.5, 'rgba(0,0,0,0.5)');
+  grad.addColorStop(1, 'rgba(0,0,0,0.85)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, w, h);
+
+  // Текст
+  const slide = state.scenario.slides[state.currentSlide];
+  if (slide) {
+    ctx.save();
+    ctx.shadowColor = 'rgba(0,0,0,0.8)';
+    ctx.shadowBlur = 10;
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 26px "Space Grotesk", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const lines = wrapText(ctx, slide.text, w * 0.82);
+    const lh = 32;
+    const startY = h * 0.72 - ((lines.length - 1) * lh) / 2;
+    lines.forEach((line, i) => ctx.fillText(line, w/2, startY + i * lh));
+    ctx.restore();
+  }
+
+  // Номер
+  ctx.save();
+  ctx.globalAlpha = 0.5;
+  ctx.fillStyle = '#fff';
+  ctx.font = '600 13px "DM Sans"';
+  ctx.textAlign = 'right';
+  ctx.fillText(`${state.currentSlide + 1} / ${state.numSlides}`, w - 20, 30);
+  ctx.restore();
+
+  // Логотип
+  ctx.save();
+  ctx.globalAlpha = 0.4;
+  ctx.fillStyle = '#ff4444';
+  ctx.font = 'bold 12px "Space Grotesk"';
+  ctx.textAlign = 'left';
+  ctx.fillText('ShortsGen', 20, 30);
+  ctx.restore();
+}
+
+// ===================== НАВИГАЦИЯ СЛАЙДОВ =====================
+
+function prevSlide() {
+  if (state.currentSlide > 0) {
+    state.currentSlide--;
+    updateSlideUI();
+  }
+}
+function nextSlide() {
+  if (state.currentSlide < state.numSlides - 1) {
+    state.currentSlide++;
+    updateSlideUI();
+  }
+}
+
+function updateSlideUI() {
+  drawPreview();
+  document.getElementById('slide-counter').textContent = `${state.currentSlide + 1} / ${state.numSlides}`;
+  document.getElementById('prev-btn').disabled = state.currentSlide === 0;
+  document.getElementById('next-btn').disabled = state.currentSlide === state.numSlides - 1;
+
+  // Обновляем timeline
+  document.querySelectorAll('.timeline-item').forEach((el, i) => {
+    el.classList.toggle('active', i === state.currentSlide);
+  });
+}
+
+// ===================== TIMELINE =====================
+
+function buildTimeline() {
+  const container = document.getElementById('timeline');
+  container.innerHTML = '';
+  state.imageUrls.forEach((url, i) => {
+    const item = document.createElement('div');
+    item.className = 'timeline-item' + (i === 0 ? ' active' : '');
+    item.innerHTML = `<img src="${url}" alt="Слайд ${i+1}" loading="lazy"><span class="slide-num">${i+1}</span>`;
+    item.addEventListener('click', () => {
+      state.currentSlide = i;
+      updateSlideUI();
+    });
+    container.appendChild(item);
+  });
+}
+
+// ===================== СКАЧИВАНИЕ =====================
+
+function downloadVideo() {
+  if (!state.videoBlob) {
+    showToast('Видео ещё не собрано', 'warn');
+    return;
+  }
+  const url = URL.createObjectURL(state.videoBlob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `shortsgen_${Date.now()}.webm`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('Видео скачивается!', 'success');
+}
+
+// ===================== ГЛАВНЫЙ ПАЙПЛАЙН =====================
+
+async function startGeneration() {
+  const topic = document.getElementById('topic-input').value.trim();
+  if (!topic) {
+    showToast('Введите тему для шортса', 'warn');
+    document.getElementById('topic-input').focus();
+    return;
+  }
+  if (state.isGenerating) return;
+  state.isGenerating = true;
+  state.topic = topic;
+  state.ttsMethod = null; // Сбрасываем кэш TTS метода
+
+  // UI: блокируем кнопку, показываем прогресс
+  const btn = document.getElementById('gen-btn');
+  const btnText = document.getElementById('btn-text');
+  const shimmer = document.getElementById('btn-shimmer');
+  btn.disabled = true;
+  btnText.innerHTML = '<span class="spinner"></span> Генерация...';
+  shimmer.style.display = 'none';
+
+  const progressSection = document.getElementById('progress-section');
+  progressSection.style.display = 'flex';
+
+  // Сброс прогресса
+  ['p-scenario', 'p-images', 'p-audio', 'p-video'].forEach(id => {
+    setProgress(id, 0, 'Ожидание');
+  });
+
+  // Скрываем пустое состояние
+  document.getElementById('empty-state').style.display = 'none';
+
+  try {
+    // === ЭТАП 1: СЦЕНАРИЙ ===
+    setProgress('p-scenario', 10, 'Генерация сценария...');
+    showToast('Генерирую сценарий через Pollinations LLM...', 'info', 3000);
+
+    state.scenario = await generateScenario(topic, state.style, state.numSlides);
+
+    // Валидация
+    if (!state.scenario || !state.scenario.slides || !state.scenario.slides.length) {
+      throw new Error('LLM вернул некорректный сценарий');
+    }
+    state.numSlides = Math.min(state.scenario.slides.length, 8);
+    state.scenario.slides = state.scenario.slides.slice(0, 8);
+
+    setProgress('p-scenario', 100, 'Готово');
+    showToast(`Сценарий готов: ${state.numSlides} слайдов`, 'success', 2000);
+
+    // Показываем сценарий
+    const scenarioSection = document.getElementById('scenario-section');
+    scenarioSection.style.display = 'block';
+    let scenarioText = `📌 ${state.scenario.title || topic}\n\n`;
+    state.scenario.slides.forEach((s, i) => {
+      scenarioText += `[${i + 1}] ${s.text}\n`;
+    });
+    document.getElementById('scenario-text').textContent = scenarioText;
+
+    // === ЭТАП 2: ИЗОБРАЖЕНИЯ ===
+    state.images = [];
+    state.imageUrls = [];
+    const slideCount = state.numSlides;
+
+    for (let i = 0; i < slideCount; i++) {
+      setProgress('p-images', Math.round(((i) / slideCount) * 100), `Изображение ${i + 1}/${slideCount}...`);
+
+      const slide = state.scenario.slides[i];
+      let prompt = slide.imagePrompt || slide.text;
+
+      // Добавляем стилистические модификаторы
+      const styleMods = {
+        motivation: 'cinematic lighting, golden hour, epic, inspirational',
+        facts: 'clean, infographic style, vibrant colors, educational',
+        humor: 'colorful, fun, cartoonish, bright',
+        horror: 'dark, eerie, foggy, horror movie aesthetic',
+        science: 'futuristic, clean, blue tones, high-tech',
+        story: 'cinematic, dramatic lighting, movie still'
+      };
+      prompt += `, ${styleMods[state.style] || styleMods.motivation}, vertical 9:16, high quality`;
+
+      try {
+        const result = await generateImage(prompt, i);
+        state.images.push(result.img);
+        state.imageUrls.push(result.url);
+      } catch(e) {
+        console.warn(`Ошибка изображения ${i+1}:`, e);
+        // Создаём заглушку
+        const fallback = createFallbackImage(i, slide.text);
+        state.images.push(fallback.img);
+        state.imageUrls.push(fallback.url);
+      }
+    }
+
+    setProgress('p-images', 100, 'Готово');
+    showToast('Все изображения сгенерированы', 'success', 2000);
+
+    // Показываем превью и timeline
+    document.getElementById('preview-section').style.display = 'flex';
+    document.getElementById('timeline-section').style.display = 'block';
+    state.currentSlide = 0;
+    drawPreview();
+    buildTimeline();
+    updateSlideUI();
+
+    // Включаем кнопки
+    document.getElementById('speak-btn').disabled = false;
+    document.getElementById('prev-btn').disabled = false;
+
+    // === ЭТАП 3: ОЗВУЧКА ===
+    state.audioBlobs = [];
+    let ttsSuccess = 0;
+
+    for (let i = 0; i < slideCount; i++) {
+      setProgress('p-audio', Math.round((i / slideCount) * 100), `Озвучка ${i + 1}/${slideCount}...`);
+      try {
+        const blob = await generateTTS(state.scenario.slides[i].text);
+        state.audioBlobs.push(blob);
+        if (blob) ttsSuccess++;
+      } catch(e) {
+        state.audioBlobs.push(null);
+      }
+    }
+
+    if (ttsSuccess > 0) {
+      setProgress('p-audio', 100, `Готово (${ttsSuccess}/${slideCount})`);
+      showToast(`Озвучка готова: ${ttsSuccess} из ${slideCount} слайдов`, 'success');
+    } else {
+      setProgress('p-audio', 100, 'Без звука (используйте «Прослушать»)');
+      showToast('TTS API недоступен. Озвучка через «Прослушать» (Web Speech API). Видео будет без звука.', 'warn', 6000);
+    }
+
+    // === ЭТАП 4: СБОРКА ВИДЕО ===
+    setProgress('p-video', 5, 'Подготовка рендера...');
+    showToast('Собираю видео (это может занять время)...', 'info', 3000);
+
+    state.videoBlob = await assembleVideo();
+
+    setProgress('p-video', 100, 'Готово');
+    document.getElementById('download-btn').disabled = false;
+
+    const sizeMB = (state.videoBlob.size / (1024 * 1024)).toFixed(1);
+    showToast(`Видео готово! Размер: ${sizeMB} МБ`, 'success', 5000);
+
+  } catch(error) {
+    console.error('Ошибка генерации:', error);
+    showToast(`Ошибка: ${error.message}`, 'error', 6000);
+
+    // Если есть хотя бы изображения — показываем превью
+    if (state.images.length > 0) {
+      document.getElementById('preview-section').style.display = 'flex';
+      document.getElementById('timeline-section').style.display = 'block';
+      document.getElementById('speak-btn').disabled = false;
+      drawPreview();
+      buildTimeline();
+      updateSlideUI();
+    }
+  } finally {
+    state.isGenerating = false;
+    btn.disabled = false;
+    btnText.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles" style="margin-right:8px;"></i>Сгенерировать шортс';
+    shimmer.style.display = 'block';
+  }
+}
+
+/** Создать изображение-заглушку на canvas */
+function createFallbackImage(index, text) {
+  const canvas = document.createElement('canvas');
+  canvas.width = 1080;
+  canvas.height = 1920;
+  const ctx = canvas.getContext('2d');
+
+  // Градиентный фон
+  const colors = [
+    ['#1a0a2e', '#3d1a6e'], ['#0a2e1a', '#1a6e3d'], ['#2e1a0a', '#6e3d1a'],
+    ['#0a1a2e', '#1a3d6e'], ['#2e0a1a', '#6e1a3d'], ['#1a2e0a', '#3d6e1a'],
+    ['#0a2e2e', '#1a6e6e'], ['#2e2e0a', '#6e6e1a']
+  ];
+  const [c1, c2] = colors[index % colors.length];
+  const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  grad.addColorStop(0, c1);
+  grad.addColorStop(1, c2);
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Декоративные круги
+  ctx.globalAlpha = 0.1;
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.arc(200 + index * 100, 600, 200, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(800 - index * 80, 1200, 300, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = 1;
+
+  // Номер слайда
+  ctx.fillStyle = 'rgba(255,255,255,0.15)';
+  ctx.font = 'bold 300px "Space Grotesk"';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(`${index + 1}`, canvas.width / 2, canvas.height / 2 - 50);
+
+  // Текст
+  ctx.fillStyle = 'rgba(255,255,255,0.7)';
+  ctx.font = '40px "DM Sans"';
+  const lines = wrapText(ctx, text.substring(0, 80), canvas.width * 0.7);
+  const startY = canvas.height * 0.75;
+  lines.forEach((line, i) => ctx.fillText(line, canvas.width / 2, startY + i * 50));
+
+  const img = new Image();
+  const url = canvas.toDataURL('image/jpeg', 0.85);
+  img.src = url;
+  return { img, url };
+}
+
+// ===================== ИНИЦИАЛИЗАЦИЯ =====================
+document.addEventListener('DOMContentLoaded', () => {
+  drawPreview();
+
+  // Enter на инпуте
+  document.getElementById('topic-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') startGeneration();
+  });
+});
+</script>
+</body>
+</html>

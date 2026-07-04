@@ -3,116 +3,84 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ShortsGen — Генератор Шортсов</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<title>ShortsGen — Стабильный</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
-  :root {
-    --bg: #06060c; --bg2: #0c0c16; --card: rgba(255,255,255,0.03);
-    --border: rgba(255,255,255,0.07); --fg: #e4e4ed; --muted: #5e5e75;
-    --accent: #ff3b3b; --accent2: #ff7a00; --accent-glow: rgba(255,59,59,0.25);
-    --green: #00e68a; --green-glow: rgba(0,230,138,0.2);
-  }
+  :root { --bg:#050508; --card:rgba(255,255,255,0.03); --border:rgba(255,255,255,0.06); --fg:#e8e8f0; --muted:#555570; --accent:#ff2d2d; --accent2:#ff8800; --accent-glow:rgba(255,45,45,0.3); --green:#00e68a; }
   * { margin:0; padding:0; box-sizing:border-box; }
-  body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--fg); min-height:100vh; overflow-x:hidden; }
+  body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--fg); min-height:100vh; }
   h1,h2,h3,h4 { font-family:'Space Grotesk',sans-serif; }
-
-  .bg-mesh { position:fixed; inset:0; z-index:0; pointer-events:none;
-    background: radial-gradient(ellipse at 10% 20%, rgba(255,59,59,0.12) 0%, transparent 50%),
-                radial-gradient(ellipse at 90% 80%, rgba(120,40,220,0.12) 0%, transparent 50%);
-  }
-
-  .glass { background:var(--card); border:1px solid var(--border); border-radius:14px; backdrop-filter:blur(12px); }
-  
-  .sg-input { width:100%; padding:11px 14px; border-radius:9px; background:rgba(255,255,255,0.05); border:1px solid var(--border); color:var(--fg); font-size:14px; outline:none; transition: border .2s; font-family:inherit; }
+  .bg-m { position:fixed; inset:0; z-index:0; pointer-events:none; background: radial-gradient(ellipse at 15% 10%, rgba(255,45,45,0.1) 0%, transparent 50%), radial-gradient(ellipse at 85% 90%, rgba(255,136,0,0.08) 0%, transparent 50%); }
+  .glass { background:var(--card); border:1px solid var(--border); border-radius:14px; }
+  .sg-input { width:100%; padding:11px 14px; border-radius:9px; background:rgba(255,255,255,0.05); border:1px solid var(--border); color:var(--fg); font-size:14px; outline:none; transition:border .2s; font-family:inherit; }
   .sg-input:focus { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-glow); }
   .sg-input::placeholder { color:var(--muted); }
-
-  .style-btn { padding:7px 12px; border-radius:8px; font-size:12px; font-weight:600; background:rgba(255,255,255,0.04); border:1px solid var(--border); color:var(--muted); cursor:pointer; transition:all .2s; text-align:center; }
+  .style-btn { padding:7px 0; border-radius:8px; font-size:11px; font-weight:700; background:rgba(255,255,255,0.04); border:1px solid var(--border); color:var(--muted); cursor:pointer; transition:all .2s; text-align:center; text-transform:uppercase; letter-spacing:.5px; }
   .style-btn:hover { background:rgba(255,255,255,0.07); color:var(--fg); }
-  .style-btn.active { background:linear-gradient(135deg,var(--accent),var(--accent2)); border-color:transparent; color:#fff; box-shadow:0 4px 15px var(--accent-glow); }
-
+  .style-btn.active { background:linear-gradient(135deg,var(--accent),var(--accent2)); border-color:transparent; color:#fff; box-shadow:0 3px 12px var(--accent-glow); }
   .sg-range { -webkit-appearance:none; width:100%; height:5px; border-radius:3px; background:rgba(255,255,255,0.08); outline:none; }
   .sg-range::-webkit-slider-thumb { -webkit-appearance:none; width:18px; height:18px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--accent2)); cursor:pointer; }
-
-  .gen-btn { width:100%; padding:14px; border:none; border-radius:11px; font-size:15px; font-weight:700; font-family:'Space Grotesk',sans-serif; cursor:pointer; background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#fff; position:relative; overflow:hidden; transition:transform .15s, box-shadow .15s; box-shadow:0 5px 25px var(--accent-glow); }
+  .gen-btn { width:100%; padding:14px; border:none; border-radius:11px; font-size:15px; font-weight:800; font-family:'Space Grotesk',sans-serif; cursor:pointer; background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#fff; transition:transform .15s, box-shadow .15s; box-shadow:0 5px 25px var(--accent-glow); text-transform:uppercase; letter-spacing:1px; }
   .gen-btn:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 8px 35px var(--accent-glow); }
   .gen-btn:disabled { opacity:0.4; cursor:not-allowed; transform:none; }
-
-  .progress-bar { height:3px; border-radius:2px; background:rgba(255,255,255,0.06); overflow:hidden; }
-  .progress-fill { height:100%; border-radius:2px; transition:width .3s; background:linear-gradient(90deg,var(--accent),var(--accent2)); }
-  .progress-fill.done { background:linear-gradient(90deg,var(--green),#00c9ff); }
-
-  /* Аудио Загрузка */
-  .audio-drop { border:2px dashed var(--border); border-radius:12px; padding:20px; text-align:center; cursor:pointer; transition:all .2s; position:relative; }
-  .audio-drop:hover, .audio-drop.dragover { border-color:var(--accent); background:rgba(255,59,59,0.05); }
+  .p-bar { height:3px; border-radius:2px; background:rgba(255,255,255,0.06); overflow:hidden; }
+  .p-fill { height:100%; border-radius:2px; transition:width .3s; background:linear-gradient(90deg,var(--accent),var(--accent2)); }
+  .p-fill.done { background:linear-gradient(90deg,var(--green),#00c9ff); }
+  .audio-drop { border:2px dashed var(--border); border-radius:12px; padding:16px; text-align:center; cursor:pointer; transition:all .2s; position:relative; }
+  .audio-drop:hover { border-color:var(--accent); background:rgba(255,45,45,0.03); }
   .audio-drop input { position:absolute; inset:0; opacity:0; cursor:pointer; }
-  .audio-info { margin-top:10px; font-size:13px; color:var(--green); display:none; align-items:center; gap:8px; }
+  .audio-info { margin-top:8px; font-size:12px; color:var(--green); display:none; align-items:center; gap:8px; background:rgba(0,230,138,0.05); padding:8px 12px; border-radius:8px; }
   .audio-info.active { display:flex; }
-
-  /* Телефон */
-  .phone-frame { width:260px; height:462px; border-radius:28px; border:3px solid rgba(255,255,255,0.1); background:#000; overflow:hidden; position:relative; box-shadow:0 20px 60px rgba(0,0,0,0.6); }
+  .phone-frame { width:260px; height:462px; border-radius:28px; border:3px solid rgba(255,255,255,0.1); background:#000; overflow:hidden; position:relative; box-shadow:0 20px 60px rgba(0,0,0,0.7); }
   .phone-frame canvas { width:100%; height:100%; display:block; }
   .phone-notch { position:absolute; top:0; left:50%; transform:translateX(-50%); width:90px; height:22px; background:#000; border-radius:0 0 14px 14px; z-index:5; }
-
-  /* Timeline */
-  .tl-item { width:64px; height:114px; border-radius:8px; overflow:hidden; border:2px solid transparent; cursor:pointer; flex-shrink:0; transition:all .2s; background:rgba(255,255,255,0.02); position:relative; }
+  .tl-item { width:60px; height:107px; border-radius:8px; overflow:hidden; border:2px solid transparent; cursor:pointer; flex-shrink:0; transition:all .2s; background:rgba(255,255,255,0.02); position:relative; }
   .tl-item:hover { transform:scale(1.05); }
   .tl-item.active { border-color:var(--accent); box-shadow:0 0 12px var(--accent-glow); }
-  .tl-item img { width:100%; height:100%; object-fit:cover; }
-  .tl-item span { position:absolute; bottom:3px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.7); color:#fff; font-size:10px; font-weight:700; padding:1px 6px; border-radius:4px; }
-
-  .action-btn { padding:9px 18px; border-radius:9px; font-size:13px; font-weight:600; border:1px solid var(--border); background:var(--card); color:var(--fg); cursor:pointer; transition:all .2s; display:inline-flex; align-items:center; gap:7px; font-family:inherit; }
-  .action-btn:hover { background:rgba(255,255,255,0.06); }
-  .action-btn.primary { background:linear-gradient(135deg,var(--green),#00c9ff); border-color:transparent; color:#000; }
-  .action-btn.primary:hover { box-shadow:0 4px 20px var(--green-glow); }
-  .action-btn:disabled { opacity:0.3; cursor:not-allowed; }
-
-  .toast { padding:12px 18px; border-radius:10px; font-size:13px; font-weight:500; backdrop-filter:blur(20px); border:1px solid var(--border); animation:tin .3s ease; max-width:360px; display:flex; align-items:center; gap:9px; }
-  .toast-success { background:rgba(0,40,25,0.9); color:var(--green); border-color:rgba(0,230,138,0.2); }
-  .toast-error { background:rgba(40,10,10,0.9); color:#ff6b6b; border-color:rgba(255,59,59,0.2); }
-  .toast-warn { background:rgba(40,35,10,0.9); color:#ffc940; border-color:rgba(255,201,64,0.2); }
-  .toast-info { background:rgba(20,20,40,0.9); color:var(--fg); }
-  @keyframes tin { from { opacity:0; transform:translateY(15px); } to { opacity:1; transform:translateY(0); } }
-
-  .spinner { width:18px; height:18px; border:2.5px solid rgba(255,255,255,0.2); border-top-color:#fff; border-radius:50%; animation:spin .6s linear infinite; display:inline-block; }
+  .tl-item img, .tl-item canvas { width:100%; height:100%; object-fit:cover; display:block; }
+  .tl-item span { position:absolute; bottom:2px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.8); color:#fff; font-size:10px; font-weight:700; padding:1px 5px; border-radius:4px; z-index:2; }
+  .act-btn { padding:9px 18px; border-radius:9px; font-size:13px; font-weight:600; border:1px solid var(--border); background:var(--card); color:var(--fg); cursor:pointer; transition:all .2s; display:inline-flex; align-items:center; gap:7px; font-family:inherit; }
+  .act-btn:hover { background:rgba(255,255,255,0.06); }
+  .act-btn.primary { background:linear-gradient(135deg,var(--green),#00c9ff); border-color:transparent; color:#000; font-weight:700; }
+  .act-btn.primary:hover { box-shadow:0 4px 20px rgba(0,230,138,0.2); }
+  .act-btn:disabled { opacity:0.3; cursor:not-allowed; }
+  .toast { padding:12px 16px; border-radius:10px; font-size:12px; font-weight:500; backdrop-filter:blur(20px); border:1px solid var(--border); animation:tin .3s ease; max-width:340px; display:flex; align-items:center; gap:8px; pointer-events:auto; }
+  .toast-success { background:rgba(0,40,25,0.95); color:var(--green); border-color:rgba(0,230,138,0.2); }
+  .toast-error { background:rgba(40,10,10,0.95); color:#ff6b6b; border-color:rgba(255,59,59,0.2); }
+  .toast-warn { background:rgba(40,35,10,0.95); color:#ffc940; border-color:rgba(255,201,64,0.2); }
+  .toast-info { background:rgba(20,20,40,0.95); color:var(--fg); }
+  @keyframes tin { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+  .spinner { width:16px; height:16px; border:2px solid rgba(255,255,255,0.2); border-top-color:#fff; border-radius:50%; animation:spin .6s linear infinite; display:inline-block; }
   @keyframes spin { to { transform:rotate(360deg); } }
-
-  @media (max-width:860px) {
-    .main-wrap { flex-direction:column !important; }
-    .panel-l { width:100% !important; border-right:none !important; border-bottom:1px solid var(--border); }
-    .phone-frame { width:220px; height:391px; }
-  }
-  @media (prefers-reduced-motion:reduce) { * { animation:none!important; transition:none!important; } }
+  @media (max-width:860px) { .main-wrap { flex-direction:column !important; } .panel-l { width:100% !important; border-right:none !important; border-bottom:1px solid var(--border); } .phone-frame { width:220px; height:391px; } }
 </style>
 </head>
 <body>
 
-<div class="bg-mesh" aria-hidden="true"></div>
+<div class="bg-m" aria-hidden="true"></div>
 <div id="toasts" style="position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column-reverse;gap:8px;pointer-events:none;"></div>
 
-<header style="position:relative;z-index:10;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:rgba(6,6,12,0.8);backdrop-filter:blur(15px);">
+<header style="position:relative;z-index:10;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:rgba(5,5,8,0.8);backdrop-filter:blur(15px);">
   <div style="display:flex;align-items:center;gap:10px;">
-    <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-clapperboard" style="font-size:14px;color:#fff;"></i></div>
-    <h1 style="font-size:20px;font-weight:700;">Shorts<span style="color:var(--accent);">Gen</span> <span style="font-size:11px;color:var(--muted);font-weight:400;">v2.0</span></h1>
+    <div style="width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-bolt" style="font-size:13px;color:#fff;"></i></div>
+    <h1 style="font-size:18px;font-weight:800;letter-spacing:-0.5px;">SHORTS<span style="color:var(--accent);">GEN</span> <span style="font-size:10px;color:var(--muted);font-weight:400;">v3 STABLE</span></h1>
   </div>
-  <span style="font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px;"><span style="width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block;"></span>Pollinations API</span>
 </header>
 
-<main class="main-wrap" style="position:relative;z-index:10;display:flex;min-height:calc(100vh - 61px);">
+<main class="main-wrap" style="position:relative;z-index:10;display:flex;min-height:calc(100vh - 55px);">
   
-  <!-- Левая панель -->
-  <aside class="panel-l" style="width:340px;flex-shrink:0;padding:20px;border-right:1px solid var(--border);overflow-y:auto;display:flex;flex-direction:column;gap:16px;">
+  <aside class="panel-l" style="width:320px;flex-shrink:0;padding:16px;border-right:1px solid var(--border);overflow-y:auto;display:flex;flex-direction:column;gap:14px;">
     
     <div>
-      <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px;"><i class="fa-solid fa-pen-nib" style="margin-right:5px;color:var(--accent);"></i>Тема</label>
-      <input id="inp-topic" class="sg-input" type="text" placeholder="Например: Загадки глубокого океана..." maxlength="200">
+      <label style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px;">Тема шортса</label>
+      <input id="inp-topic" class="sg-input" type="text" placeholder="Загадки глубокого океана..." maxlength="200">
     </div>
 
     <div>
-      <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px;"><i class="fa-solid fa-palette" style="margin-right:5px;color:var(--accent);"></i>Стиль</label>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;" id="styles">
+      <label style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px;">Стиль</label>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;" id="styles">
         <button class="style-btn active" data-s="motivation">Мотивация</button>
         <button class="style-btn" data-s="facts">Факты</button>
         <button class="style-btn" data-s="humor">Юмор</button>
@@ -123,376 +91,372 @@
     </div>
 
     <div>
-      <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;display:flex;justify-content:space-between;margin-bottom:6px;"><span><i class="fa-solid fa-layer-group" style="margin-right:5px;color:var(--accent);"></i>Слайды (клипы)</span><span id="v-slides" style="color:var(--fg);">5</span></label>
-      <input id="r-slides" class="sg-range" type="range" min="3" max="10" value="5">
+      <label style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;display:flex;justify-content:space-between;margin-bottom:5px;"><span>Клипов</span><span id="v-slides" style="color:var(--fg);">5</span></label>
+      <input id="r-slides" class="sg-range" type="range" min="3" max="8" value="5">
     </div>
 
-    <!-- ЗАГРУЗКА АУДИО -->
     <div>
-      <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px;"><i class="fa-solid fa-music" style="margin-right:5px;color:var(--green);"></i>Аудио (опционально)</label>
+      <label style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px;"><i class="fa-solid fa-microphone" style="margin-right:4px;color:var(--green);"></i>Озвучка (MP3)</label>
       <div id="audio-drop" class="audio-drop">
         <input type="file" id="audio-file" accept="audio/*">
-        <i class="fa-solid fa-cloud-arrow-up" style="font-size:24px;color:var(--muted);margin-bottom:6px;display:block;"></i>
-        <span style="font-size:13px;color:var(--muted);">Перетащите MP3/WAV/OGG или кликните</span>
+        <i class="fa-solid fa-cloud-arrow-up" style="font-size:20px;color:var(--muted);margin-bottom:4px;display:block;"></i>
+        <span style="font-size:12px;color:var(--muted);">Загрузи MP3 (любой TTS)</span>
         <div id="audio-info" class="audio-info">
-          <i class="fa-solid fa-file-audio"></i>
+          <i class="fa-solid fa-circle-check"></i>
           <span id="audio-name"></span>
           <span id="audio-dur" style="margin-left:auto;color:var(--accent2);font-weight:700;"></span>
-          <button onclick="event.stopPropagation(); clearAudio();" style="background:none;border:none;color:#ff4444;cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+          <button onclick="event.stopPropagation(); clearAudio();" style="background:none;border:none;color:#ff4444;cursor:pointer;font-size:14px;"><i class="fa-solid fa-xmark"></i></button>
         </div>
       </div>
-      <p style="font-size:11px;color:var(--muted);margin-top:6px;"><i class="fa-solid fa-circle-info" style="margin-right:3px;"></i>Длина видео будет равна длине аудио. Без аудио — по 4 сек на слайд.</p>
+      <p style="font-size:10px;color:var(--muted);margin-top:4px;line-height:1.4;">Без аудио: 4 сек на клип.</p>
     </div>
 
     <button id="btn-gen" class="gen-btn" onclick="generate()">
       <i class="fa-solid fa-wand-magic-sparkles" style="margin-right:8px;"></i>Собрать шортс
     </button>
 
-    <!-- Прогресс -->
-    <div id="prog-wrap" style="display:none;flex-direction:column;gap:12px;">
-      <div id="p-sc"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px;"><span style="color:var(--muted);"><i class="fa-solid fa-scroll" style="margin-right:4px;"></i>Сценарий</span><span class="ps" style="color:var(--muted);">Ожидание</span></div><div class="progress-bar"><div class="progress-fill" style="width:0%"></div></div></div>
-      <div id="p-im"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px;"><span style="color:var(--muted);"><i class="fa-solid fa-image" style="margin-right:4px;"></i>Генерация кадров</span><span class="ps" style="color:var(--muted);">Ожидание</span></div><div class="progress-bar"><div class="progress-fill" style="width:0%"></div></div></div>
-      <div id="p-vd"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px;"><span style="color:var(--muted);"><i class="fa-solid fa-video" style="margin-right:4px;"></i>Рендер видео</span><span class="ps" style="color:var(--muted);">Ожидание</span></div><div class="progress-bar"><div class="progress-fill" style="width:0%"></div></div></div>
+    <div id="prog-wrap" style="display:none;flex-direction:column;gap:10px;">
+      <div id="p-sc"><div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:2px;"><span style="color:var(--muted);">Сценарий</span><span class="ps" style="color:var(--muted);">...</span></div><div class="p-bar"><div class="p-fill" style="width:0%"></div></div></div>
+      <div id="p-im"><div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:2px;"><span style="color:var(--muted);">AI Кадры</span><span class="ps" style="color:var(--muted);">...</span></div><div class="p-bar"><div class="p-fill" style="width:0%"></div></div></div>
+      <div id="p-vd"><div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:2px;"><span style="color:var(--muted);">Рендер</span><span class="ps" style="color:var(--muted);">...</span></div><div class="p-bar"><div class="p-fill" style="width:0%"></div></div></div>
     </div>
   </aside>
 
-  <!-- Правая панель -->
-  <section style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;gap:16px;position:relative;">
+  <section style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;gap:14px;">
     
-    <div id="empty" style="text-align:center;max-width:380px;">
-      <div style="width:70px;height:70px;border-radius:18px;background:var(--card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;"><i class="fa-solid fa-film" style="font-size:28px;color:var(--muted);"></i></div>
-      <h2 style="font-size:18px;font-weight:700;margin-bottom:6px;">Генерация динамичных шортсов</h2>
-      <p style="font-size:13px;color:var(--muted);line-height:1.5;">Каждый слайд анимируется частицами и эффектами. Загрузите аудио, чтобы видео собралось точно под его длину.</p>
+    <div id="empty" style="text-align:center;max-width:360px;">
+      <div style="width:60px;height:60px;border-radius:16px;background:var(--card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;"><i class="fa-solid fa-clapperboard" style="font-size:24px;color:var(--muted);"></i></div>
+      <h2 style="font-size:16px;font-weight:700;margin-bottom:4px;">Стабильная сборка</h2>
+      <p style="font-size:12px;color:var(--muted);line-height:1.5;">Рендер 720p без теней. Не виснет. Загрузи аудио для синхронизации.</p>
     </div>
 
-    <div id="preview" style="display:none;flex-direction:column;align-items:center;gap:14px;">
+    <div id="preview" style="display:none;flex-direction:column;align-items:center;gap:12px;">
       <div class="phone-frame"><div class="phone-notch"></div><canvas id="cvs" width="540" height="960"></canvas></div>
       <div style="display:flex;align-items:center;gap:12px;">
-        <button class="action-btn" onclick="nav(-1)" id="b-prev" style="padding:6px 10px;" disabled><i class="fa-solid fa-chevron-left"></i></button>
-        <span id="s-count" style="font-size:13px;font-weight:600;min-width:60px;text-align:center;">1 / 5</span>
-        <button class="action-btn" onclick="nav(1)" id="b-next" style="padding:6px 10px;" disabled><i class="fa-solid fa-chevron-right"></i></button>
+        <button class="act-btn" onclick="nav(-1)" id="b-prev" style="padding:6px 10px;" disabled><i class="fa-solid fa-chevron-left"></i></button>
+        <span id="s-count" style="font-size:12px;font-weight:600;min-width:50px;text-align:center;">1 / 5</span>
+        <button class="act-btn" onclick="nav(1)" id="b-next" style="padding:6px 10px;" disabled><i class="fa-solid fa-chevron-right"></i></button>
       </div>
-      <div style="display:flex;gap:8px;">
-        <button class="action-btn primary" onclick="download()" id="b-dl" disabled><i class="fa-solid fa-download"></i> Скачать .webm</button>
-      </div>
+      <button class="act-btn primary" onclick="download()" id="b-dl" disabled><i class="fa-solid fa-download"></i> Скачать .webm</button>
     </div>
 
-    <div id="tl-wrap" style="display:none;width:100%;max-width:650px;">
-      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;"><i class="fa-solid fa-film" style="margin-right:4px;"></i>Таймлайн клипов</div>
-      <div id="tl" style="display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;"></div>
+    <div id="tl-wrap" style="display:none;width:100%;max-width:600px;">
+      <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Таймлайн</div>
+      <div id="tl" style="display:flex;gap:5px;overflow-x:auto;padding-bottom:4px;"></div>
     </div>
   </section>
 </main>
 
 <script>
-// --- СОСТОЯНИЕ ---
-const S = {
-  topic:'', style:'motivation', num:5, 
-  scenario:null, imgs:[], urls:[], 
-  audioFile:null, audioUrl:null, audioDur:0, videoBlob:null, 
-  cur:0, busy:false
-};
+const S = { topic:'', style:'motivation', num:5, sc:null, imgs:[], urls:[], audioUrl:null, audioDur:0, videoBlob:null, cur:0, busy:false };
 
-// --- UI ---
+// РАЗМЕРЫ РЕНДЕРА (720p чтобы не висло!)
+const RW = 720, RH = 1280;
+
 function toast(m, t='info', d=4000) {
-  const c = document.getElementById('toasts');
-  const el = document.createElement('div');
-  el.className = `toast toast-${t}`;
-  const ic = {info:'circle-info',success:'circle-check',error:'circle-xmark',warn:'triangle-exclamation'};
-  el.innerHTML = `<i class="fa-solid fa-${ic[t]||ic.info}"></i><span>${m}</span>`;
-  c.appendChild(el);
-  setTimeout(()=>{ el.style.transition='opacity .3s'; el.style.opacity='0'; setTimeout(()=>el.remove(),300); }, d);
+  const c = document.getElementById('toasts'), el = document.createElement('div');
+  el.className = `toast toast-${t}`; 
+  el.innerHTML = `<i class="fa-solid fa-${{info:'circle-info',success:'circle-check',error:'circle-xmark',warn:'triangle-exclamation'}[t]||'circle-info'}"></i><span>${m}</span>`;
+  c.appendChild(el); setTimeout(()=>{ el.style.opacity='0'; setTimeout(()=>el.remove(),300); }, d);
 }
 
 function prog(id, p, txt) {
   const el = document.getElementById(id); if(!el) return;
-  const f = el.querySelector('.progress-fill'), s = el.querySelector('.ps');
-  f.style.width = p+'%';
-  f.classList.toggle('done', p>=100);
+  const f = el.querySelector('.p-fill'), s = el.querySelector('.ps');
+  f.style.width = p+'%'; f.classList.toggle('done', p>=100);
   s.style.color = p>=100 ? 'var(--green)' : p>0 ? 'var(--accent2)' : 'var(--muted)';
   if(txt) s.textContent = txt;
 }
 
-// --- НАСТРОЙКИ ---
-document.getElementById('styles').onclick = e => {
-  const b = e.target.closest('.style-btn'); if(!b) return;
-  document.querySelectorAll('.style-btn').forEach(x=>x.classList.remove('active'));
-  b.classList.add('active'); S.style = b.dataset.s;
-};
+// Настройки
+document.getElementById('styles').onclick = e => { const b = e.target.closest('.style-btn'); if(!b) return; document.querySelectorAll('.style-btn').forEach(x=>x.classList.remove('active')); b.classList.add('active'); S.style = b.dataset.s; };
 document.getElementById('r-slides').oninput = e => { S.num = +e.target.value; document.getElementById('v-slides').textContent = S.num; };
 document.getElementById('inp-topic').onkeydown = e => { if(e.key==='Enter') generate(); };
 
-// --- АУДИО ---
-const dropEl = document.getElementById('audio-drop');
-const fileEl = document.getElementById('audio-file');
-dropEl.ondragover = e => { e.preventDefault(); dropEl.classList.add('dragover'); };
-dropEl.ondragleave = () => dropEl.classList.remove('dragover');
-dropEl.ondrop = e => { e.preventDefault(); dropEl.classList.remove('dragover'); if(e.dataTransfer.files.length) handleAudio(e.dataTransfer.files[0]); };
-fileEl.onchange = e => { if(e.target.files.length) handleAudio(e.target.files[0]); };
+// Аудио
+document.getElementById('audio-file').onchange = e => { if(e.target.files.length) handleAudio(e.target.files[0]); };
+document.getElementById('audio-drop').ondragover = e => e.preventDefault();
+document.getElementById('audio-drop').ondrop = e => { e.preventDefault(); if(e.dataTransfer.files.length) handleAudio(e.dataTransfer.files[0]); };
 
 function handleAudio(file) {
-  if(!file.type.startsWith('audio/')) return toast('Нужен аудиофайл (MP3, WAV, OGG)', 'error');
-  S.audioFile = file;
+  if(!file.type.startsWith('audio/')) return toast('Нужен аудиофайл', 'error');
   if(S.audioUrl) URL.revokeObjectURL(S.audioUrl);
   S.audioUrl = URL.createObjectURL(file);
-  
   const a = new Audio(S.audioUrl);
   a.onloadedmetadata = () => {
     S.audioDur = a.duration;
-    document.getElementById('audio-name').textContent = file.name;
-    document.getElementById('audio-dur').textContent = formatTime(S.audioDur);
+    document.getElementById('audio-name').textContent = file.name.length > 20 ? file.name.substring(0,20)+'...' : file.name;
+    document.getElementById('audio-dur').textContent = `${Math.floor(S.audioDur/60)}:${String(Math.floor(S.audioDur%60)).padStart(2,'0')}`;
     document.getElementById('audio-info').classList.add('active');
-    toast(`Аудио загружено: ${formatTime(S.audioDur)}`, 'success', 2000);
+    toast('Аудио привязано', 'success', 2000);
   };
-  a.onerror = () => toast('Не удалось прочитать аудио', 'error');
 }
-function clearAudio() {
-  S.audioFile = null; S.audioUrl = null; S.audioDur = 0;
-  document.getElementById('audio-info').classList.remove('active');
-  fileEl.value = '';
-}
-function formatTime(s) { const m = Math.floor(s/60); return `${m}:${String(Math.floor(s%60)).padStart(2,'0')}`; }
+function clearAudio() { S.audioUrl=null; S.audioDur=0; document.getElementById('audio-info').classList.remove('active'); document.getElementById('audio-file').value=''; }
 
-// --- СЦЕНАРИЙ ---
+// --- СЦЕНАРИЙ (ЖЁСТКИЙ КОНТРОЛЬ КОЛИЧЕСТВА) ---
 async function getScenario(topic, style, num) {
-  const sp = {
-    motivation:'мотивационный, мощные фразы', facts:'познавательный, удивительные детали',
-    humor:'ироничный, забавные сравнения', horror:'напряжённый, тревожный',
-    science:'чёткие объяснения, просто о сложном', story:'эмоциональный, завязка и развязка'
-  };
+  const sp = { motivation:'мощные фразы, короткие предложения', facts:'удивительные детали, цифры', humor:'ирония, сарказм', horror:'саспенс, короткие фразы', science:'просто о сложном', story:'эмоции, динамика' };
+  
   const res = await fetch('https://text.pollinations.ai/', {
     method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({
+    body: JSON.stringify({ 
       messages:[
-        {role:'system', content:`Ты сценарист Shorts. Пиши на русском. Стиль: ${sp[style]}. Ответ ТОЛЬКО валидный JSON.`},
-        {role:'user', content:`Сценарий на "${topic}". ${num} слайдов. Формат: {"title":"...", "slides":[{"text":"до 100 символов","imagePrompt":"детальное описание на АНГЛИЙСКОМ"}]}`}
-      ],
-      model:'openai', jsonMode:true, seed:Math.floor(Math.random()*1e5)
+        {role:'system', content:`Ты сценарист Shorts. Русский язык. Стиль: ${sp[style]}. 
+ВАЖНОЕ ПРАВИЛО: Ты ДОЛЖЕН вернуть РОВНО ${num} слайдов в массиве "slides". Ни больше, ни меньше. Если не хватает идей — придумай. Ответ ТОЛЬКО валидный JSON. Без markdown блоков.`},
+        {role:'user', content:`Тема: "${topic}". 
+ВЕРНИ РОВНО ${num} СЛАЙДОВ!
+Формат: {"slides":[{"text":"максимум 70 символов, 2-4 слова","img":"детальный английский промпт для кинематографичного вертикального кадра"}]}`}
+      ], 
+      model:'openai', jsonMode:true, seed:Math.floor(Math.random()*1e5) 
     })
   });
+  
   if(!res.ok) throw new Error('LLM ошибка '+res.status);
-  const raw = await res.text();
-  const match = raw.match(/\{[\s\S]*\}/);
-  if(!match) throw new Error('Нет JSON в ответе');
-  return JSON.parse(match[0]);
-}
-
-// --- КАРТИНКИ (ПАРАЛЛЕЛЬНО) ---
-async function getImg(prompt) {
-  const seed = Math.floor(Math.random()*999999);
-  const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1080&height=1920&nologo=true&seed=${seed}&model=flux`;
-  return new Promise((res, rej) => {
-    const img = new Image(); img.crossOrigin = 'anonymous';
-    img.onload = () => res({img, url});
-    img.onerror = () => rej(new Error('Img fail'));
-    img.src = url;
-    setTimeout(() => rej(new Error('Timeout')), 60000); // 60с таймаут
-  });
-}
-
-function fallback(i, text) {
-  const c = document.createElement('canvas'); c.width=1080; c.height=1920;
-  const x = c.getContext('2d');
-  const g = x.createLinearGradient(0,0,0,1920);
-  g.addColorStop(0, ['#1a0a2e','#0a2e1a','#2e1a0a','#0a1a2e','#2e0a1a','#1a2e0a','#0a2e2e','#2e2e0a','#1a1a2e','#2e1a1a'][i%10]);
-  g.addColorStop(1, '#000');
-  x.fillStyle=g; x.fillRect(0,0,1080,1920);
-  x.fillStyle='rgba(255,255,255,0.05)'; x.font='bold 250px Space Grotesk'; x.textAlign='center'; x.fillText(i+1,540,960);
-  const img = new Image(); const url = c.toDataURL('image/jpeg',0.8); img.src=url;
-  return {img, url};
-}
-
-// --- ЭФФЕКТЫ ДЛЯ "ВИДЕО" ---
-// Частицы инициализируются один раз
-let particles = [];
-function initParticles(style) {
-  particles = [];
-  for(let i=0; i<40; i++) {
-    particles.push({
-      x: Math.random()*1080, y: Math.random()*1920,
-      vx: (Math.random()-0.5)*2, vy: -Math.random()*3 - 1,
-      size: Math.random()*4+1, alpha: Math.random()*0.6+0.2
-    });
+  const raw = await res.text(); 
+  const m = raw.match(/\{[\s\S]*\}/); 
+  if(!m) throw new Error('LLM не вернул JSON');
+  
+  let data = JSON.parse(m[0]);
+  
+  // ПРИНУДИТЕЛЬНАЯ ВАЛИДАЦИЯ: если вернулось меньше слайдов — дублируем последний
+  if(!data.slides || !Array.isArray(data.slides)) throw new Error('Нет массива слайдов');
+  
+  while(data.slides.length < num) {
+    const last = data.slides[data.slides.length - 1];
+    data.slides.push({ text: "И это ещё не всё...", img: last.img });
   }
+  
+  // Обрезаем если вернулось больше
+  data.slides = data.slides.slice(0, num);
+  
+  return data;
 }
 
-function drawEffects(ctx, w, h, progress, style) {
-  // Общие эффекты: Летящие частицы (пыль/искры/снег)
+// --- КАРТИНКИ ПАРАЛЛЕЛЬНО ---
+async function getImg(p) {
+  const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(p)}?width=${RW}&height=${RH}&nologo=true&seed=${Math.floor(Math.random()*999999)}&model=flux`;
+  return new Promise((res, rej) => { 
+    const img = new Image(); 
+    img.crossOrigin = 'anonymous'; 
+    img.onload = () => res(img); 
+    img.onerror = () => rej(new Error('fail')); 
+    img.src = url; 
+    setTimeout(() => rej(new Error('timeout')), 45000); 
+  });
+}
+
+// ЗАГЛУШКА (возвращает CANVAS, а не Image, чтобы не было проблем с загрузкой)
+function makeFallback(i, text) {
+  const c = document.createElement('canvas'); 
+  c.width = RW; c.height = RH;
+  const x = c.getContext('2d');
+  const colors = ['#1a0a2e','#0a2e1a','#2e1a0a','#0a1a2e','#2e0a1a','#1a2e0a','#0a2e2e','#2e2e0a'];
+  const g = x.createLinearGradient(0,0,0,RH);
+  g.addColorStop(0, colors[i % colors.length]);
+  g.addColorStop(1, '#000');
+  x.fillStyle = g; x.fillRect(0,0,RW,RH);
+  x.fillStyle = 'rgba(255,255,255,0.04)'; x.font = 'bold 180px Space Grotesk'; x.textAlign = 'center'; x.textBaseline = 'middle';
+  x.fillText(i+1, RW/2, RH/2);
+  return c; // Canvas можно использовать как источник для drawImage!
+}
+
+// --- ЧАСТИЦЫ ---
+let pts = [];
+function initPts() { 
+  pts = []; 
+  for(let i=0; i<20; i++) pts.push({
+    x:Math.random()*RW, y:Math.random()*RH, 
+    vx:(Math.random()-0.5)*1.5, vy:-Math.random()*2-0.5, 
+    s:Math.random()*2.5+0.5, a:Math.random()*0.3+0.1
+  }); 
+}
+
+function drawFx(ctx, p, style) {
+  const colors = {motivation:'#ffaa00',horror:'#882222',science:'#2266ff',humor:'#ff44ff',story:'#88aaff',facts:'#00ffaa'};
+  const c = colors[style]||'#ffffff';
   ctx.save();
-  particles.forEach(p => {
-    p.x += p.vx; p.y += p.vy;
-    if(p.y < -10) { p.y = h+10; p.x = Math.random()*w; }
-    if(p.x < -10) p.x = w+10; if(p.x > w+10) p.x = -10;
-    
-    ctx.globalAlpha = p.alpha * (0.5 + 0.5*Math.sin(progress*10 + p.x));
-    let color = '#ffffff';
-    if(style==='motivation') color = '#ffaa00';
-    if(style==='horror') color = '#884444';
-    if(style==='science') color = '#44aaff';
-    if(style==='humor') color = '#ff44ff';
-    if(style==='story') color = '#aaccff';
-    
-    ctx.fillStyle = color;
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
-    ctx.fill();
+  pts.forEach(pt => { 
+    pt.x+=pt.vx; pt.y+=pt.vy; 
+    if(pt.y<-10){pt.y=RH+10;pt.x=Math.random()*RW;} 
+    ctx.globalAlpha = pt.a*(0.5+0.5*Math.sin(p*8+pt.x));
+    ctx.fillStyle = c; 
+    ctx.beginPath(); ctx.arc(pt.x,pt.y,pt.s,0,Math.PI*2); ctx.fill(); 
   });
   ctx.restore();
+}
 
-  // Движущийся блик (Lens flare)
-  ctx.save();
-  const flareX = w * 0.3 + Math.sin(progress * 2) * w * 0.4;
-  const flareY = h * 0.2 + Math.cos(progress * 1.5) * h * 0.1;
-  const flareGrad = ctx.createRadialGradient(flareX, flareY, 0, flareX, flareY, 250);
-  flareGrad.addColorStop(0, 'rgba(255,255,255,0.15)');
-  flareGrad.addColorStop(1, 'rgba(255,255,255,0)');
-  ctx.fillStyle = flareGrad;
-  ctx.fillRect(0, 0, w, h);
-  ctx.restore();
+// --- КИНЕТИЧЕСКИЙ ТЕКСТ (БЕЗ ТЕНЕЙ!) ---
+function drawKineticText(ctx, w, h, text, progress) {
+  const words = text.split(' ');
+  if(!words.length) return;
+  
+  ctx.font = '800 42px "Space Grotesk", sans-serif';
+  const maxW = w * 0.85;
+  
+  // Разбиваем на строки
+  let lines = [], curLine = [];
+  for (const word of words) {
+    const test = curLine.join(' ') + (curLine.length ? ' ' : '') + word;
+    if (ctx.measureText(test).width > maxW && curLine.length > 0) {
+      lines.push(curLine.join(' '));
+      curLine = [word];
+    } else {
+      curLine.push(word);
+    }
+  }
+  if (curLine.length) lines.push(curLine.join(' '));
+  
+  const lineHeight = 54;
+  const baseY = h * 0.75 - ((lines.length - 1) * lineHeight) / 2;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  
+  lines.forEach((line, li) => {
+    const lWords = line.split(' ');
+    let widths = lWords.map(w => ctx.measureText(w).width);
+    let totalW = widths.reduce((a,b) => a+b, 0) + (lWords.length-1)*16;
+    let startX = (w - totalW) / 2;
+    let y = baseY + li * lineHeight;
+
+    lWords.forEach((word, wi) => {
+      const wordDelay = (li * 4 + wi) * 0.06; // задержка каждого слова
+      const wordProgress = Math.max(0, Math.min(1, (progress - wordDelay) * 5));
+      if (wordProgress <= 0) return;
+
+      const scale = 1.4 - (wordProgress * 0.4);
+      const alpha = wordProgress;
+      
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.translate(startX + widths[wi]/2, y);
+      ctx.scale(scale, scale);
+      
+      // ОБВОДКА ВМЕСТО ТЕНИ (в 100 раз быстрее!)
+      ctx.strokeStyle = 'rgba(0,0,0,0.9)';
+      ctx.lineWidth = 5;
+      ctx.lineJoin = 'round';
+      ctx.strokeText(word, 0, 0);
+      
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText(word, 0, 0);
+      ctx.restore();
+
+      startX += widths[wi] + 16;
+    });
+  });
 }
 
 // --- РЕНДЕР КАДРА ---
-function drawFrame(ctx, w, h, slideIdx, progress, style) {
-  const img = S.imgs[slideIdx]; if(!img) return;
+function drawFrame(ctx, w, h, si, p, style) {
+  const img = S.imgs[si]; if(!img) return;
   
-  // Ken Burns (медленный зум и сдвиг)
-  const dirs = [{x:0,y:0},{x:-1,y:0},{x:1,y:0.5},{x:0.5,y:-1},{x:-0.5,y:1},{x:0,y:-0.5},{x:1,y:-0.5},{x:-1,y:0.5},{x:0.5,y:0.5},{x:-0.5,y:-0.5}];
-  const d = dirs[slideIdx % dirs.length];
-  const scale = 1.1 + progress * 0.1;
-  const panX = d.x * progress * 60;
-  const panY = d.y * progress * 40;
+  // Ken Burns
+  const dirs = [{x:0,y:0},{x:-1,y:0.5},{x:1,y:0},{x:0,y:-1},{x:-0.5,y:1},{x:0.5,y:-0.5},{x:-1,y:-0.5},{x:1,y:0.5}];
+  const d = dirs[si % dirs.length];
+  const sc = 1.1 + p * 0.08, px = d.x * p * 40, py = d.y * p * 25;
 
-  ctx.save();
-  ctx.translate(w/2 + panX, h/2 + panY);
-  ctx.scale(scale, scale);
-  ctx.drawImage(img, -w/2, -h/2, w, h);
-  ctx.restore();
-
-  // Динамические эффекты
-  drawEffects(ctx, w, h, progress, style);
+  ctx.save(); ctx.translate(w/2+px, h/2+py); ctx.scale(sc, sc); ctx.drawImage(img, -w/2, -h/2, w, h); ctx.restore();
+  
+  drawFx(ctx, p, style);
 
   // Виньетка
-  const vig = ctx.createRadialGradient(w/2, h/2, h*0.3, w/2, h/2, h*0.8);
-  vig.addColorStop(0, 'rgba(0,0,0,0)');
-  vig.addColorStop(1, 'rgba(0,0,0,0.7)');
+  const vig = ctx.createRadialGradient(w/2,h/2,h*0.3,w/2,h/2,h*0.8);
+  vig.addColorStop(0,'rgba(0,0,0,0)'); vig.addColorStop(1,'rgba(0,0,0,0.7)');
   ctx.fillStyle = vig; ctx.fillRect(0,0,w,h);
-
-  // Нижний градиент под текст
-  const grad = ctx.createLinearGradient(0, h*0.6, 0, h);
-  grad.addColorStop(0, 'rgba(0,0,0,0)');
-  grad.addColorStop(1, 'rgba(0,0,0,0.9)');
-  ctx.fillStyle = grad; ctx.fillRect(0,0,w,h);
+  
+  // Низ
+  const gr = ctx.createLinearGradient(0,h*0.55,0,h);
+  gr.addColorStop(0,'rgba(0,0,0,0)'); gr.addColorStop(1,'rgba(0,0,0,0.9)');
+  ctx.fillStyle = gr; ctx.fillRect(0,0,w,h);
 
   // Текст
-  const slide = S.scenario.slides[slideIdx];
-  if(slide) {
-    const ta = Math.min(1, progress * 5);
-    const yo = (1 - Math.min(1, progress * 4)) * 40;
-    ctx.save(); ctx.globalAlpha = ta;
-    ctx.shadowColor = 'rgba(0,0,0,0.9)'; ctx.shadowBlur = 20; ctx.shadowOffsetY = 4;
-    ctx.fillStyle = '#fff'; ctx.font = 'bold 50px "Space Grotesk", sans-serif';
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    const lines = wrap(ctx, slide.text, w*0.82);
-    const lh = 62; const sy = h*0.75 - ((lines.length-1)*lh)/2 + yo;
-    lines.forEach((l,i) => ctx.fillText(l, w/2, sy + i*lh));
-    ctx.restore();
-  }
+  const slide = S.sc.slides[si];
+  if(slide) drawKineticText(ctx, w, h, slide.text, p);
 
-  // Номер слайда
-  ctx.save(); ctx.globalAlpha=0.4; ctx.fillStyle='#fff'; ctx.font='600 22px "DM Sans"'; ctx.textAlign='right';
-  ctx.fillText(`${slideIdx+1}/${S.num}`, w-35, 55); ctx.restore();
-
-  // Фейд при старте слайда
-  if(progress < 0.05) { ctx.fillStyle=`rgba(0,0,0,${1-progress/0.05})`; ctx.fillRect(0,0,w,h); }
+  // Номер
+  ctx.save(); ctx.globalAlpha=0.3; ctx.fillStyle='#fff'; ctx.font='600 18px "DM Sans"'; ctx.textAlign='right'; ctx.fillText(`${si+1}/${S.num}`, w-25, 40); ctx.restore();
+  
+  // Фейд
+  if(p<0.05){ctx.fillStyle=`rgba(0,0,0,${1-p/0.05})`;ctx.fillRect(0,0,w,h);}
 }
 
-function wrap(ctx, text, maxW) {
-  const words = text.split(' '); const lines = []; let cur = '';
-  for(const w of words) {
-    const t = cur ? cur+' '+w : w;
-    if(ctx.measureText(t).width > maxW && cur) { lines.push(cur); cur = w; } else cur = t;
-  }
-  if(cur) lines.push(cur); return lines;
+// Превью
+function drawPreview() { 
+  const c=document.getElementById('cvs'), x=c.getContext('2d'); 
+  x.clearRect(0,0,c.width,c.height); 
+  if(!S.imgs.length){x.fillStyle='#111';x.fillRect(0,0,c.width,c.height);return;} 
+  drawFrame(x,c.width,c.height,S.cur,0.6,S.style); 
 }
 
-// --- ПРЕВЬЮ ---
-function drawPreview() {
-  const c = document.getElementById('cvs'); const ctx = c.getContext('2d');
-  ctx.clearRect(0,0,c.width,c.height);
-  if(!S.imgs.length) { ctx.fillStyle='#111'; ctx.fillRect(0,0,c.width,c.height); return; }
-  drawFrame(ctx, c.width, c.height, S.cur, 0.5, S.style); // Статичное превью
+function nav(d) { S.cur=Math.max(0,Math.min(S.num-1,S.cur+d)); updateUI(); }
+function updateUI() { 
+  drawPreview(); 
+  document.getElementById('s-count').textContent=`${S.cur+1} / ${S.num}`; 
+  document.getElementById('b-prev').disabled=S.cur===0; 
+  document.getElementById('b-next').disabled=S.cur===S.num-1; 
+  document.querySelectorAll('.tl-item').forEach((el,i)=>el.classList.toggle('active',i===S.cur)); 
 }
 
-// --- НАВИГАЦИЯ ---
-function nav(dir) {
-  S.cur = Math.max(0, Math.min(S.num-1, S.cur+dir));
-  updateUI();
-}
-function updateUI() {
-  drawPreview();
-  document.getElementById('s-count').textContent = `${S.cur+1} / ${S.num}`;
-  document.getElementById('b-prev').disabled = S.cur===0;
-  document.getElementById('b-next').disabled = S.cur===S.num-1;
-  document.querySelectorAll('.tl-item').forEach((el,i) => el.classList.toggle('active', i===S.cur));
-}
-function buildTL() {
-  const tl = document.getElementById('tl'); tl.innerHTML = '';
-  S.urls.forEach((u,i) => {
-    const d = document.createElement('div'); d.className = 'tl-item'+(i===0?' active':'');
-    d.innerHTML = `<img src="${u}" alt="Клип ${i+1}"><span>${i+1}</span>`;
-    d.onclick = () => { S.cur=i; updateUI(); };
-    tl.appendChild(d);
-  });
+function buildTL() { 
+  const tl=document.getElementById('tl'); tl.innerHTML=''; 
+  S.urls.forEach((u,i) => { 
+    const d=document.createElement('div'); d.className='tl-item'+(i===0?' active':'');
+    if(typeof u === 'string') {
+      d.innerHTML = `<img src="${u}"><span>${i+1}</span>`;
+    } else {
+      // Это canvas (заглушка)
+      d.appendChild(u.cloneNode(true));
+      const sp = document.createElement('span'); sp.textContent = i+1; d.appendChild(sp);
+    }
+    d.onclick = () => { S.cur=i; updateUI(); }; 
+    tl.appendChild(d); 
+  }); 
 }
 
-// --- СБОРКА ВИДЕО (АНТИКРАШ) ---
+// --- СБОРКА ВИДЕО (СУПЕР СТАБИЛЬНАЯ) ---
 async function assemble() {
-  const c = document.createElement('canvas'); c.width=1080; c.height=1920;
+  const c = document.createElement('canvas'); c.width = RW; c.height = RH;
   const ctx = c.getContext('2d');
   
-  // Длина видео = длина аудио, либо 4с * кол-во слайдов
   const totalDur = S.audioDur > 0 ? S.audioDur : (S.num * 4);
   const slideDur = totalDur / S.num;
-  const fps = 15; // 15 FPS чтобы не крашило вкладку!
+  const fps = 10; // 10fps - максимально стабильно, для статичных кадров достаточно
   const totalFrames = Math.ceil(totalDur * fps);
-
+  
   const stream = c.captureStream(fps);
   let audioEl = null;
 
-  // Подмешиваем аудио если есть
-  if(S.audioUrl) {
-    try {
-      const aCtx = new AudioContext();
-      const dest = aCtx.createMediaStreamDestination();
-      audioEl = new Audio(S.audioUrl);
-      const src = aCtx.createMediaElementSource(audioEl);
-      src.connect(dest); src.connect(aCtx.destination);
-      dest.stream.getAudioTracks().forEach(t => stream.addTrack(t));
-    } catch(e) { console.warn('Аудио стрим ошибка', e); }
+  if(S.audioUrl) { 
+    try { 
+      const aCtx = new AudioContext(), dest = aCtx.createMediaStreamDestination(); 
+      audioEl = new Audio(S.audioUrl); 
+      const src = aCtx.createMediaElementSource(audioEl); 
+      src.connect(dest); src.connect(aCtx.destination); 
+      dest.stream.getAudioTracks().forEach(t => stream.addTrack(t)); 
+    } catch(e) { console.warn('Audio stream err', e); } 
   }
 
   let mime = 'video/webm;codecs=vp9,opus';
   if(!MediaRecorder.isTypeSupported(mime)) mime = 'video/webm;codecs=vp8,opus';
   if(!MediaRecorder.isTypeSupported(mime)) mime = 'video/webm';
-
-  const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 4000000 });
+  
+  // Сбрасываем буфер каждую секунду чтобы не забивалась память
+  const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 2500000 });
   const chunks = [];
-  rec.ondataavailable = e => { if(e.data.size>0) chunks.push(e.data); };
+  rec.ondataavailable = e => { if(e.data.size > 0) chunks.push(e.data); };
 
   return new Promise((res, rej) => {
     rec.onstop = () => {
-      if(audioEl) { try{audioEl.pause();audioEl.currentTime=0;}catch(e){} }
-      res(new Blob(chunks, {type:'video/webm'}));
+      if(audioEl) try { audioEl.pause(); audioEl.currentTime = 0; } catch(e){}
+      res(new Blob(chunks, { type: 'video/webm' }));
     };
     rec.onerror = e => rej(e.error);
     
-    rec.start(100); // Сбрасываем буфер каждые 100мс для экономии памяти
+    rec.start(1000); // Сброс каждые 1000мс
     if(audioEl) audioEl.play().catch(()=>{});
-
+    
     let frame = 0;
-    initParticles(S.style);
+    initPts();
 
-    // Используем setTimeout вместо rAF чтобы не перегружать рендер
     function tick() {
       if(frame >= totalFrames) { rec.stop(); return; }
       
@@ -500,106 +464,117 @@ async function assemble() {
       const si = Math.min(Math.floor(t / slideDur), S.num - 1);
       const sp = (t - si * slideDur) / slideDur;
       
-      drawFrame(ctx, c.width, c.height, si, sp, S.style);
+      drawFrame(ctx, RW, RH, si, sp, S.style);
       
-      // Обновляем прогресс каждые 15 кадров
-      if(frame % 15 === 0) {
-        const p = Math.round((frame/totalFrames)*100);
-        prog('p-vd', p, `Рендер ${p}%`);
+      // Обновляем прогресс каждые 5 кадров
+      if(frame % 5 === 0) {
+        const p = Math.round((frame / totalFrames) * 100);
+        prog('p-vd', p, `${p}%`);
       }
       
       frame++;
-      setTimeout(tick, 1000 / fps); // Строго 15fps без привязки к монитору
+      // Жёсткий таймаут без привязки к монитору
+      setTimeout(tick, 100); // 10fps
     }
-    tick();
+    
+    // Небольшая задержка перед стартом чтобы аудио успело инициализироваться
+    setTimeout(tick, 200);
   });
 }
 
-// --- СКАЧИВАНИЕ ---
-function download() {
-  if(!S.videoBlob) return toast('Видео не готово','warn');
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(S.videoBlob);
-  a.download = `shortsgen_${Date.now()}.webm`;
-  a.click(); URL.revokeObjectURL(a.href);
-  toast('Скачивание началось!','success');
+function download() { 
+  if(!S.videoBlob) return; 
+  const a = document.createElement('a'); 
+  a.href = URL.createObjectURL(S.videoBlob); 
+  a.download = `shorts_${Date.now()}.webm`; 
+  a.click(); URL.revokeObjectURL(a.href); 
+  toast('Скачивается!', 'success'); 
 }
 
 // --- ГЛАВНЫЙ ПАЙПЛАЙН ---
 async function generate() {
   const topic = document.getElementById('inp-topic').value.trim();
-  if(!topic) { toast('Введите тему','warn'); document.getElementById('inp-topic').focus(); return; }
-  if(S.busy) return; S.busy = true;
-
-  const btn = document.getElementById('btn-gen');
-  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Генерация...';
+  if(!topic) { toast('Введите тему', 'warn'); return; } 
+  if(S.busy) return; 
+  S.busy = true;
+  
+  const btn = document.getElementById('btn-gen'); 
+  btn.disabled = true; 
+  btn.innerHTML = '<span class="spinner"></span> Процесс...';
   document.getElementById('prog-wrap').style.display = 'flex';
-  ['p-sc','p-im','p-vd'].forEach(id => prog(id, 0, 'Ожидание'));
+  ['p-sc','p-im','p-vd'].forEach(id => prog(id, 0, '...'));
   document.getElementById('empty').style.display = 'none';
 
   try {
-    // 1. Сценарий
-    prog('p-sc', 20, 'Генерация...');
-    S.scenario = await getScenario(topic, S.style, S.num);
-    if(!S.scenario?.slides?.length) throw new Error('Пустой сценарий');
-    S.num = Math.min(S.scenario.slides.length, 10);
-    S.scenario.slides = S.scenario.slides.slice(0, 10);
-    prog('p-sc', 100, 'Готово');
+    // 1. СЦЕНАРИЙ С ЖЁСТКОЙ ПРОВЕРКОЙ
+    prog('p-sc', 20, 'Генерация...'); 
+    S.sc = await getScenario(topic, S.style, S.num);
+    
+    // Двойная проверка
+    S.num = S.sc.slides.length;
+    if(S.num < 2) throw new Error('Слишком мало слайдов сгенерировано');
+    
+    prog('p-sc', 100, `Готово (${S.num})`); 
     toast(`Сценарий: ${S.num} клипов`, 'success', 2000);
 
-    // 2. Картинки ПАРАЛЛЕЛЬНО (решает проблему зависания на первой)
-    prog('p-im', 10, 'Загрузка 0/'+S.num);
-    S.imgs = []; S.urls = [];
+    // 2. КАРТИНКИ ПАРАЛЛЕЛЬНО
+    prog('p-im', 10, `0/${S.num}`); 
+    S.imgs = []; 
+    S.urls = [];
     
-    const mods = {
-      motivation:'cinematic, golden hour, epic', facts:'clean, vibrant, educational',
-      humor:'colorful, fun, cartoonish', horror:'dark, eerie, foggy',
-      science:'futuristic, blue tones, high-tech', story:'cinematic, dramatic lighting, movie still'
-    };
-
-    const promises = S.scenario.slides.map((sl, i) => {
-      let p = sl.imagePrompt || sl.text;
-      p += `, ${mods[S.style]||mods.motivation}, vertical 9:16, high quality`;
-      return getImg(p).then(r => ({idx:i, ...r})).catch(() => ({idx:i, ...fallback(i, sl.text)}));
+    const mods = {motivation:'cinematic, golden hour',facts:'vibrant, infographic',humor:'colorful, fun',horror:'dark, eerie, foggy',science:'futuristic, blue',story:'dramatic lighting, movie still'};
+    
+    const promises = S.sc.slides.map((sl, i) => {
+      const prompt = `${sl.img || sl.text}, ${mods[S.style] || mods.motivation}, vertical 9:16, high quality`;
+      return getImg(prompt)
+        .then(img => ({ idx: i, source: img, isCanvas: false }))
+        .catch(() => ({ idx: i, source: makeFallback(i, sl.text), isCanvas: true }));
     });
 
     const results = await Promise.all(promises);
+    results.sort((a, b) => a.idx - b.idx);
     
-    // Сортируем по индексу (на случай если какой-то вернулся раньше)
-    results.sort((a,b) => a.idx - b.idx);
-    results.forEach(r => { S.imgs.push(r.img); S.urls.push(r.url); });
+    results.forEach(r => {
+      S.imgs.push(r.source);
+      S.urls.push(r.isCanvas ? r.source : (r.source.src || ''));
+    });
     
-    prog('p-im', 100, 'Готово');
-    toast('Все кадры сгенерированы','success');
+    prog('p-im', 100, 'Готово'); 
+    toast('Все кадры загружены', 'success');
 
     // Показываем превью
-    document.getElementById('preview').style.display = 'flex';
-    document.getElementById('tl-wrap').style.display = 'block';
-    S.cur = 0; drawPreview(); buildTL(); updateUI();
+    document.getElementById('preview').style.display = 'flex'; 
+    document.getElementById('tl-wrap').style.display = 'block'; 
+    S.cur = 0; 
+    drawPreview(); 
+    buildTL(); 
+    updateUI();
 
-    // 3. Видео
-    prog('p-vd', 5, 'Старт рендера...');
-    toast('Рендер видео (15fps, не закрывайте вкладку)...', 'info', 4000);
+    // 3. РЕНДЕР
+    prog('p-vd', 5, 'Старт...'); 
+    toast(`Рендер ${RW}p 10fps...`, 'info', 3000);
+    
+    // Принудительная сборка мусора перед рендером (если браузер поддерживает)
+    if(window.gc) window.gc();
     
     S.videoBlob = await assemble();
-    prog('p-vd', 100, 'Готово');
-    document.getElementById('b-dl').disabled = false;
     
-    const mb = (S.videoBlob.size/(1024*1024)).toFixed(1);
-    toast(`Готово! Размер: ${mb} МБ`, 'success');
-
-  } catch(e) {
-    console.error(e);
-    toast(`Ошибка: ${e.message}`, 'error', 6000);
+    prog('p-vd', 100, 'Готово'); 
+    document.getElementById('b-dl').disabled = false;
+    toast(`Готово! ${(S.videoBlob.size/1024/1024).toFixed(1)} МБ`, 'success');
+    
+  } catch(e) { 
+    console.error(e); 
+    toast(`Ошибка: ${e.message}`, 'error'); 
     if(S.imgs.length) {
-      document.getElementById('preview').style.display = 'flex';
-      document.getElementById('tl-wrap').style.display = 'block';
-      drawPreview(); buildTL(); updateUI();
-    }
-  } finally {
-    S.busy = false;
-    btn.disabled = false;
-    btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles" style="margin-right:8px;"></i>Собрать шортс';
+      document.getElementById('preview').style.display = 'flex'; 
+      document.getElementById('tl-wrap').style.display = 'block'; 
+      drawPreview(); buildTL(); updateUI(); 
+    } 
+  } finally { 
+    S.busy = false; 
+    btn.disabled = false; 
+    btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles" style="margin-right:8px;"></i>Собрать шортс'; 
   }
 }
 </script>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ShortsGen — Финал</title>
+<title>ShortsGen — Рабочий</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <script src="https://cdn.tailwindcss.com"></script>
@@ -41,9 +41,7 @@
   .tl-item img { width:100%; height:100%; object-fit:cover; display:block; }
   .tl-item span { position:absolute; bottom:2px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.8); color:#fff; font-size:10px; font-weight:700; padding:1px 5px; border-radius:4px; z-index:2; }
   .act-btn { padding:9px 18px; border-radius:9px; font-size:13px; font-weight:600; border:1px solid var(--border); background:var(--card); color:var(--fg); cursor:pointer; transition:all .2s; display:inline-flex; align-items:center; gap:7px; font-family:inherit; }
-  .act-btn:hover { background:rgba(255,255,255,0.06); }
   .act-btn.primary { background:linear-gradient(135deg,var(--green),#00c9ff); border-color:transparent; color:#000; font-weight:700; }
-  .act-btn.primary:hover { box-shadow:0 4px 20px rgba(0,230,138,0.2); }
   .act-btn:disabled { opacity:0.3; cursor:not-allowed; }
   .toast { padding:12px 16px; border-radius:10px; font-size:12px; font-weight:500; backdrop-filter:blur(20px); border:1px solid var(--border); animation:tin .3s ease; max-width:340px; display:flex; align-items:center; gap:8px; pointer-events:auto; }
   .toast-success { background:rgba(0,40,25,0.95); color:var(--green); border-color:rgba(0,230,138,0.2); }
@@ -64,7 +62,7 @@
 <header style="position:relative;z-index:10;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:rgba(5,5,8,0.8);backdrop-filter:blur(15px);">
   <div style="display:flex;align-items:center;gap:10px;">
     <div style="width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-bolt" style="font-size:13px;color:#fff;"></i></div>
-    <h1 style="font-size:18px;font-weight:800;letter-spacing:-0.5px;">SHORTS<span style="color:var(--accent);">GEN</span> <span style="font-size:10px;color:var(--muted);font-weight:400;">TEXT-PARSE</span></h1>
+    <h1 style="font-size:18px;font-weight:800;">SHORTS<span style="color:var(--accent);">GEN</span></h1>
   </div>
 </header>
 
@@ -99,32 +97,30 @@
       <div id="audio-drop" class="audio-drop">
         <input type="file" id="audio-file" accept="audio/*">
         <i class="fa-solid fa-cloud-arrow-up" style="font-size:20px;color:var(--muted);margin-bottom:4px;display:block;"></i>
-        <span style="font-size:12px;color:var(--muted);">Загрузи MP3 (любой TTS)</span>
+        <span style="font-size:12px;color:var(--muted);">Загрузи MP3</span>
         <div id="audio-info" class="audio-info">
           <i class="fa-solid fa-circle-check"></i>
           <span id="audio-name"></span>
           <span id="audio-dur" style="margin-left:auto;color:var(--accent2);font-weight:700;"></span>
-          <button onclick="event.stopPropagation(); clearAudio();" style="background:none;border:none;color:#ff4444;cursor:pointer;font-size:14px;"><i class="fa-solid fa-xmark"></i></button>
+          <button onclick="event.stopPropagation(); clearAudio();" style="background:none;border:none;color:#ff4444;cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
         </div>
       </div>
     </div>
 
-    <button id="btn-gen" class="gen-btn" onclick="generate()">
-      <i class="fa-solid fa-wand-magic-sparkles" style="margin-right:8px;"></i>Собрать шортс
-    </button>
+    <button id="btn-gen" class="gen-btn" onclick="generate()"><i class="fa-solid fa-wand-magic-sparkles" style="margin-right:8px;"></i>Собрать шортс</button>
 
     <div id="prog-wrap" style="display:none;flex-direction:column;gap:10px;">
-      <div id="p-sc"><div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:2px;"><span style="color:var(--muted);">Сценарий</span><span class="ps" style="color:var(--muted);">...</span></div><div class="p-bar"><div class="p-fill" style="width:0%"></div></div></div>
-      <div id="p-im"><div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:2px;"><span style="color:var(--muted);">AI Кадры</span><span class="ps" style="color:var(--muted);">...</span></div><div class="p-bar"><div class="p-fill" style="width:0%"></div></div></div>
-      <div id="p-vd"><div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:2px;"><span style="color:var(--muted);">Рендер</span><span class="ps" style="color:var(--muted);">...</span></div><div class="p-bar"><div class="p-fill" style="width:0%"></div></div></div>
+      <div id="p-sc"><div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:2px;"><span style="color:var(--muted);">Сценарий</span><span class="ps">...</span></div><div class="p-bar"><div class="p-fill" style="width:0%"></div></div></div>
+      <div id="p-im"><div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:2px;"><span style="color:var(--muted);">Кадры</span><span class="ps">...</span></div><div class="p-bar"><div class="p-fill" style="width:0%"></div></div></div>
+      <div id="p-vd"><div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:2px;"><span style="color:var(--muted);">Рендер</span><span class="ps">...</span></div><div class="p-bar"><div class="p-fill" style="width:0%"></div></div></div>
     </div>
   </aside>
 
   <section style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;gap:14px;">
     <div id="empty" style="text-align:center;max-width:360px;">
       <div style="width:60px;height:60px;border-radius:16px;background:var(--card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;"><i class="fa-solid fa-clapperboard" style="font-size:24px;color:var(--muted);"></i></div>
-      <h2 style="font-size:16px;font-weight:700;margin-bottom:4px;">Текстовый парсинг</h2>
-      <p style="font-size:12px;color:var(--muted);line-height:1.5;">Теперь нейросеть не сможет схалтурить и выдать 1 слайд. Жёсткий текстовый шаблон.</p>
+      <h2 style="font-size:16px;font-weight:700;margin-bottom:4px;">100% Рабочий рендер</h2>
+      <p style="font-size:12px;color:var(--muted);line-height:1.5;">Исправлен баг с пустым экраном. Теперь заглушки рисуются мгновенно.</p>
     </div>
 
     <div id="preview" style="display:none;flex-direction:column;align-items:center;gap:12px;">
@@ -150,11 +146,9 @@ const RW = 720, RH = 1280;
 
 function toast(m, t='info', d=4000) {
   const c = document.getElementById('toasts'), el = document.createElement('div');
-  el.className = `toast toast-${t}`; 
-  el.innerHTML = `<i class="fa-solid fa-${{info:'circle-info',success:'circle-check',error:'circle-xmark',warn:'triangle-exclamation'}[t]||'circle-info'}"></i><span>${m}</span>`;
+  el.className = `toast toast-${t}`; el.innerHTML = `<i class="fa-solid fa-${{info:'circle-info',success:'circle-check',error:'circle-xmark',warn:'triangle-exclamation'}[t]||'circle-info'}"></i><span>${m}</span>`;
   c.appendChild(el); setTimeout(()=>{ el.style.opacity='0'; setTimeout(()=>el.remove(),300); }, d);
 }
-
 function prog(id, p, txt) {
   const el = document.getElementById(id); if(!el) return;
   const f = el.querySelector('.p-fill'), s = el.querySelector('.ps');
@@ -163,12 +157,10 @@ function prog(id, p, txt) {
   if(txt) s.textContent = txt;
 }
 
-// Настройки
 document.getElementById('styles').onclick = e => { const b = e.target.closest('.style-btn'); if(!b) return; document.querySelectorAll('.style-btn').forEach(x=>x.classList.remove('active')); b.classList.add('active'); S.style = b.dataset.s; };
 document.getElementById('r-slides').oninput = e => { S.num = +e.target.value; document.getElementById('v-slides').textContent = S.num; };
 document.getElementById('inp-topic').onkeydown = e => { if(e.key==='Enter') generate(); };
 
-// Аудио
 document.getElementById('audio-file').onchange = e => { if(e.target.files.length) handleAudio(e.target.files[0]); };
 document.getElementById('audio-drop').ondragover = e => e.preventDefault();
 document.getElementById('audio-drop').ondrop = e => { e.preventDefault(); if(e.dataTransfer.files.length) handleAudio(e.dataTransfer.files[0]); };
@@ -186,91 +178,114 @@ function handleAudio(file) {
 }
 function clearAudio() { S.audioUrl=null; S.audioDur=0; document.getElementById('audio-info').classList.remove('active'); document.getElementById('audio-file').value=''; }
 
-// --- СЦЕНАРИЙ (АНТИ-ХАЛТУРЩИК: ЖЁСТКИЙ ТЕКСТОВЫЙ ШАБЛОН) ---
+// --- СЦЕНАРИЙ ---
 async function getScenario(topic, style, num) {
   const sp = { motivation:'мощные фразы', facts:'удивительные детали', humor:'ирония', horror:'саспенс', science:'просто о сложном', story:'эмоции' };
-  
-  // Формируем шаблон, где нейросеть ВЫНУЖДЕНА писать ровно num слайдов
-  let userPrompt = `Тема: "${topic}". Стиль: ${sp[style]}. Напиши сценарий. Строго ${num} слайдов. Формат (без markdown, просто текст):\n\n`;
-  for(let i=1; i<=num; i++) {
-    userPrompt += `СЛАЙД ${i}\nТЕКСТ: (максимум 70 символов)\nКАДР: (детальное описание на английском для AI картинки)\n\n`;
-  }
+  let userPrompt = `Тема: "${topic}". Стиль: ${sp[style]}. Строго ${num} слайдов. Формат:\n\n`;
+  for(let i=1; i<=num; i++) userPrompt += `СЛАЙД ${i}\nТЕКСТ: (до 70 символов)\nКАДР: (английский промпт для картинки)\n\n`;
 
   const res = await fetch('https://text.pollinations.ai/', {
     method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ 
-      messages:[
-        {role:'system', content:'Ты сценарист. Заполни предоставленный шаблон. Пиши только по шаблону, без лишних слов.'},
-        {role:'user', content: userPrompt}
-      ], 
-      model:'openai', seed: Math.floor(Math.random()*1e5) 
-    })
+    body: JSON.stringify({ messages:[{role:'system', content:'Заполни шаблон. Без markdown.'},{role:'user', content: userPrompt}], model:'openai', seed: Math.floor(Math.random()*1e5) })
   });
   
   if(!res.ok) throw new Error('LLM ошибка '+res.status);
   let raw = await res.text(); 
-  
-  // Убираем markdown блоки если нейросеть всё же их добавила
   raw = raw.replace(/```[\s\S]*?```/g, m => m.replace(/```\w*\n?/g, ''));
   
   const slides = [];
-  // Ищем блоки по регулярке
   const regex = /СЛАЙД\s*\d+[\s\S]*?ТЕКСТ:\s*([^\n]+)[\s\S]*?КАДР:\s*([^\n]+)/gi;
   let match;
-  while ((match = regex.exec(raw)) !== null) {
-    slides.push({ text: match[1].trim(), img: match[2].trim() });
-  }
+  while ((match = regex.exec(raw)) !== null) slides.push({ text: match[1].trim(), img: match[2].trim() });
   
-  // АБСОЛЮТНЫЙ ФЭЛЛБЭК: Если нейросеть вообще не поняла шаблон
   if(slides.length === 0) {
     const sentences = raw.split(/[.!?]\s*/).filter(s => s.trim().length > 10);
     for(let i=0; i<num; i++) {
-      const txt = sentences[i % sentences.length] ? sentences[i % sentences.length].trim().substring(0, 70) : `Интересный факт номер ${i+1}`;
-      slides.push({ text: txt, img: `cinematic photo about ${topic}, high quality, vertical` });
+      const txt = sentences[i % sentences.length] ? sentences[i % sentences.length].trim().substring(0, 70) : `Факт номер ${i+1}`;
+      slides.push({ text: txt, img: `cinematic photo about ${topic}` });
     }
   }
   
-  // Доплняем недостающие слайды если нейросеть ленилась
-  while(slides.length < num) {
-    const last = slides[slides.length - 1];
-    slides.push({ text: "И это ещё не всё...", img: last.img });
-  }
-  
+  while(slides.length < num) slides.push({ text: "И это ещё не всё...", img: slides[slides.length-1].img });
   return { slides: slides.slice(0, num) };
 }
 
-// --- КАРТИНКИ ПАРАЛЛЕЛЬНО ---
-async function getImg(p) {
-  const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(p)}?width=${RW}&height=${RH}&nologo=true&seed=${Math.floor(Math.random()*999999)}&model=flux`;
-  return new Promise((res, rej) => { 
-    const img = new Image(); 
-    img.crossOrigin = 'anonymous'; 
-    img.onload = () => res(img); 
-    img.onerror = () => rej(new Error('fail')); 
-    img.src = url; 
-    setTimeout(() => rej(new Error('timeout')), 45000); 
+// --- ЗАГЛУШКА (ИСПРАВЛЕНА: Возвращает CANVAS напрямую!) ---
+function makeFallback(i) {
+  const c = document.createElement('canvas'); 
+  c.width = RW; c.height = RH;
+  const x = c.getContext('2d');
+  const colors = ['#2a1040','#0a3020','#3a2010','#0a2040','#3a1020','#1a3020','#0a3030','#303010'];
+  const g = x.createLinearGradient(0,0,0,RH);
+  g.addColorStop(0, colors[i % colors.length]); 
+  g.addColorStop(1, '#000');
+  x.fillStyle = g; 
+  x.fillRect(0,0,RW,RH);
+  
+  // Декор
+  x.fillStyle = 'rgba(255,255,255,0.04)'; 
+  x.beginPath(); x.arc(RW*0.3, RH*0.4, 200, 0, Math.PI*2); x.fill();
+  x.beginPath(); x.arc(RW*0.8, RH*0.7, 150, 0, Math.PI*2); x.fill();
+  
+  x.fillStyle = 'rgba(255,255,255,0.08)'; 
+  x.font = 'bold 180px "Space Grotesk", sans-serif'; 
+  x.textAlign = 'center'; x.textBaseline = 'middle';
+  x.fillText(i+1, RW/2, RH/2);
+  
+  // ВАЖНО: возвращаем сам элемент Canvas! 
+  // ctx.drawImage() умеет рисовать Canvas так же, как и Image
+  return c; 
+}
+
+// --- ЗАГРУЗКА КАРТИНОК (С НАДЕЖНЫМ ФОЛЛБЭКОМ) ---
+async function loadImages() {
+  S.imgs = []; 
+  S.urls = [];
+  const mods = {motivation:'cinematic',facts:'vibrant',humor:'colorful',horror:'dark eerie',science:'futuristic blue',story:'dramatic'};
+  
+  const promises = S.sc.slides.map((sl, i) => {
+    return new Promise((resolve) => {
+      // Обрезаем промпт чтобы URL не был слишком длинным
+      let prompt = (sl.img || S.topic).substring(0, 150) + `, ${mods[S.style]||'cinematic'}, vertical 9:16`;
+      const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=${RW}&height=${RH}&nologo=true&seed=${Math.floor(Math.random()*999999)}&model=flux`;
+      
+      const img = new Image(); 
+      img.crossOrigin = 'anonymous';
+      
+      let resolved = false;
+      const finish = (finalImg, finalUrl) => {
+        if(resolved) return; // Защита от двойного срабатывания
+        resolved = true;
+        resolve({ idx: i, img: finalImg, url: finalUrl });
+      };
+
+      // Таймаут 30 секунд
+      setTimeout(() => {
+        const fbCanvas = makeFallback(i);
+        finish(fbCanvas, fbCanvas.toDataURL('image/jpeg', 0.6));
+      }, 30000);
+
+      img.onload = () => finish(img, url);
+      img.onerror = () => {
+        console.warn(`Картинка ${i+1} не загрузилась, используем заглушку`);
+        const fbCanvas = makeFallback(i);
+        finish(fbCanvas, fbCanvas.toDataURL('image/jpeg', 0.6));
+      };
+      
+      img.src = url;
+    });
+  });
+
+  const results = await Promise.all(promises);
+  results.sort((a, b) => a.idx - b.idx);
+  
+  results.forEach(r => {
+    S.imgs.push(r.img); // Тут может быть как Image, так и Canvas
+    S.urls.push(r.url); // Тут всегда строка (URL или DataURL)
   });
 }
 
-// ЗАГЛУШКА (Возвращает И Image И DataURL строку, чтобы не было багов в таймлайне)
-function makeFallback(i, text) {
-  const c = document.createElement('canvas'); c.width = RW; c.height = RH;
-  const x = c.getContext('2d');
-  const colors = ['#1a0a2e','#0a2e1a','#2e1a0a','#0a1a2e','#2e0a1a','#1a2e0a','#0a2e2e','#2e2e0a'];
-  const g = x.createLinearGradient(0,0,0,RH);
-  g.addColorStop(0, colors[i % colors.length]); g.addColorStop(1, '#000');
-  x.fillStyle = g; x.fillRect(0,0,RW,RH);
-  x.fillStyle = 'rgba(255,255,255,0.04)'; x.font = 'bold 180px Space Grotesk'; x.textAlign = 'center'; x.textBaseline = 'middle';
-  x.fillText(i+1, RW/2, RH/2);
-  
-  // Конвертируем в картинку и URL
-  const img = new Image();
-  const url = c.toDataURL('image/jpeg', 0.8);
-  img.src = url;
-  return { img, url };
-}
-
-// --- ЧАСТИЦЫ ---
+// --- ЭФФЕКТЫ ---
 let pts = [];
 function initPts() { pts = []; for(let i=0;i<20;i++) pts.push({x:Math.random()*RW,y:Math.random()*RH,vx:(Math.random()-0.5)*1.5,vy:-Math.random()*2-0.5,s:Math.random()*2.5+0.5,a:Math.random()*0.3+0.1}); }
 function drawFx(ctx, p, style) {
@@ -290,16 +305,13 @@ function drawKineticText(ctx, w, h, text, progress) {
     if (ctx.measureText(test).width > w * 0.85 && curLine.length > 0) { lines.push(curLine.join(' ')); curLine = [word]; } else curLine.push(word);
   }
   if (curLine.length) lines.push(curLine.join(' '));
-  
   const lineHeight = 54, baseY = h * 0.75 - ((lines.length - 1) * lineHeight) / 2;
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  
   lines.forEach((line, li) => {
     const lWords = line.split(' ');
     let widths = lWords.map(w => ctx.measureText(w).width);
     let totalW = widths.reduce((a,b) => a+b, 0) + (lWords.length-1)*16;
     let startX = (w - totalW) / 2, y = baseY + li * lineHeight;
-
     lWords.forEach((word, wi) => {
       const wp = Math.max(0, Math.min(1, (progress - (li * 4 + wi) * 0.06) * 5));
       if (wp <= 0) return;
@@ -331,7 +343,6 @@ function updateUI() { drawPreview(); document.getElementById('s-count').textCont
 
 function buildTL() { 
   const tl=document.getElementById('tl'); tl.innerHTML=''; 
-  // Теперь S.urls ВСЕГДА содержит только строки (URL или DataURL)
   S.urls.forEach((u,i) => { 
     const d=document.createElement('div'); d.className='tl-item'+(i===0?' active':'');
     d.innerHTML = `<img src="${u}"><span>${i+1}</span>`;
@@ -387,49 +398,19 @@ async function generate() {
   document.getElementById('empty').style.display = 'none';
 
   try {
-    // 1. СЦЕНАРИЙ
     prog('p-sc', 20, 'Генерация...'); 
     S.sc = await getScenario(topic, S.style, S.num);
-    S.num = S.sc.slides.length; // Теперь тут ТОЧНО будет нужное число
+    S.num = S.sc.slides.length;
     prog('p-sc', 100, `Готово (${S.num})`); 
     toast(`Сценарий: ${S.num} клипов`, 'success', 2000);
 
-    // 2. КАРТИНКИ
-    prog('p-im', 10, `0/${S.num}`); S.imgs = []; S.urls = [];
-    const mods = {motivation:'cinematic, golden hour',facts:'vibrant',humor:'colorful',horror:'dark, eerie',science:'futuristic, blue',story:'dramatic lighting'};
+    prog('p-im', 10, `0/${S.num}`); 
+    await loadImages(); // Вынесено в отдельную чистую функцию
     
-    const promises = S.sc.slides.map((sl, i) => {
-      const prompt = `${sl.img}, ${mods[S.style] || 'cinematic'}, vertical 9:16, high quality`;
-      return getImg(prompt)
-        .then(img => ({ idx: i, data: makeFallback(i, sl.text) })) // Временная заглушка
-        .catch(() => ({ idx: i, data: makeFallback(i, sl.text) }));
-    });
-
-    // Загружаем всё параллельно, но если картинка real загрузилась - перезаписываем заглушку
-    const imgPromises = S.sc.slides.map((sl, i) => {
-      const prompt = `${sl.img}, ${mods[S.style] || 'cinematic'}, vertical 9:16, high quality`;
-      return new Promise((resolve) => {
-        const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=${RW}&height=${RH}&nologo=true&seed=${Math.floor(Math.random()*999999)}&model=flux`;
-        const img = new Image(); img.crossOrigin = 'anonymous';
-        const timer = setTimeout(() => {
-          resolve({ idx: i, img: makeFallback(i, sl.text).img, url: makeFallback(i, sl.text).url });
-        }, 45000);
-        
-        img.onload = () => { clearTimeout(timer); resolve({ idx: i, img: img, url: url }); };
-        img.onerror = () => { clearTimeout(timer); const fb = makeFallback(i, sl.text); resolve({ idx: i, img: fb.img, url: fb.url }); };
-        img.src = url;
-      });
-    });
-
-    const results = await Promise.all(imgPromises);
-    results.sort((a, b) => a.idx - b.idx);
-    results.forEach(r => { S.imgs.push(r.img); S.urls.push(r.url); });
-    
-    prog('p-im', 100, 'Готово'); toast('Все кадры загружены', 'success');
+    prog('p-im', 100, 'Готово'); toast('Кадры загружены', 'success');
 
     document.getElementById('preview').style.display = 'flex'; document.getElementById('tl-wrap').style.display = 'block'; S.cur = 0; drawPreview(); buildTL(); updateUI();
 
-    // 3. РЕНДЕР
     prog('p-vd', 5, 'Старт...'); toast(`Рендер ${RW}p...`, 'info', 3000);
     S.videoBlob = await assemble();
     prog('p-vd', 100, 'Готово'); document.getElementById('b-dl').disabled = false;
